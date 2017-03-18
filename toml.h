@@ -83,7 +83,8 @@ TOML_EXTERN int toml_rtoi(const char* s, int64_t* ret);
 TOML_EXTERN int toml_rtod(const char* s, double* ret);
 
 /* Timestamp types. The year, month, day, hour, minute, second, z 
- * fields may be NULL if they are not relevant. 
+ * fields may be NULL if they are not relevant. e.g. In a DATE
+ * type, the hour, minute, second and z fields will be NULLs.
  */
 typedef struct toml_timestamp_t toml_timestamp_t;
 struct toml_timestamp_t {
