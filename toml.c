@@ -1,7 +1,8 @@
 /*
 MIT License
 
-Copyright (c) 2017 CK Tan
+Copyright (c) 2017 CK Tan 
+https://github.com/cktan/tomlc99
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
