@@ -33,6 +33,19 @@ SOFTWARE.
 #include <string.h>
 #include "toml.h"
 
+#ifdef _WIN32
+char* strndup(const char* s, size_t n)
+{
+    size_t len = strnlen(s, n);
+    char* p = malloc(s, len+1);
+    if (p) {
+	memcpy(p, s, len);
+	p[len] = 0;
+    }
+    return p;
+}
+#endif
+
 
 /**
  * Convert a char in utf8 into UCS, and store it in *ret.
@@ -499,9 +512,9 @@ static char* normalize_key(context_t* ctx, token_t strtok)
     /* for bare-key allow only this regex: [A-Za-z0-9_-]+ */
     const char* xp;
     for (xp = sp; xp != sq; xp++) {
-	int ch = *xp;
-	if (isalnum(ch)) continue;
-	if (ch == '_' || ch == '-') continue;
+	int k = *xp;
+	if (isalnum(k)) continue;
+	if (k == '_' || k == '-') continue;
 	bad_key_error(ctx, lineno);
     }
 
@@ -569,13 +582,13 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
     /* make a new entry */
     int n = tab->nkval;
     toml_keyval_t** base;
-    if (0 == (base = realloc(tab->kval, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_keyval_t**) realloc(tab->kval, (n+1) * sizeof(*base)))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
     }
     tab->kval = base;
     
-    if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_keyval_t*) calloc(1, sizeof(*base[n])))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
     }
@@ -613,13 +626,13 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
     /* create a new table entry */
     int n = tab->ntab;
     toml_table_t** base;
-    if (0 == (base = realloc(tab->tab, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_table_t**) realloc(tab->tab, (n+1) * sizeof(*base)))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
     }
     tab->tab = base;
 	
-    if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_table_t*) calloc(1, sizeof(*base[n])))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
     }
@@ -657,13 +670,13 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
     /* make a new array entry */
     int n = tab->narr;
     toml_array_t** base;
-    if (0 == (base = realloc(tab->arr, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_array_t**) realloc(tab->arr, (n+1) * sizeof(*base)))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
     }
     tab->arr = base;
 	
-    if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_array_t*) calloc(1, sizeof(*base[n])))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
     }
@@ -681,12 +694,12 @@ static toml_array_t* create_array_in_array(context_t* ctx,
 {
     int n = parent->nelem;
     toml_array_t** base;
-    if (0 == (base = realloc(parent->u.arr, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_array_t**) realloc(parent->u.arr, (n+1) * sizeof(*base)))) {
 	outofmemory(ctx, FLINE);
     }
     parent->u.arr = base;
     
-    if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_array_t*) calloc(1, sizeof(*base[n])))) {
 	outofmemory(ctx, FLINE);
     }
 
@@ -700,12 +713,12 @@ static toml_table_t* create_table_in_array(context_t* ctx,
 {
     int n = parent->nelem;
     toml_table_t** base;
-    if (0 == (base = realloc(parent->u.tab, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_table_t**) realloc(parent->u.tab, (n+1) * sizeof(*base)))) {
 	outofmemory(ctx, FLINE);
     }
     parent->u.tab = base;
     
-    if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_table_t*) calloc(1, sizeof(*base[n])))) {
 	outofmemory(ctx, FLINE);
     }
 
@@ -797,7 +810,7 @@ static void parse_array(context_t* ctx, toml_array_t* arr)
 		}
 
 		/* make a new value in array */
-		char** tmp = realloc(arr->u.val, (arr->nelem+1) * sizeof(*tmp));
+		char** tmp = (char**) realloc(arr->u.val, (arr->nelem+1) * sizeof(*tmp));
 		if (!tmp) outofmemory(ctx, FLINE);
 		arr->u.val = tmp;
 		if (! (val = strndup(val, vlen))) outofmemory(ctx, FLINE);
@@ -994,11 +1007,11 @@ static void walk_tabpath(context_t* ctx)
 	default:
 	    { /* Not found. Let's create an implicit table. */
 		int n = curtab->ntab;
-		toml_table_t** base = realloc(curtab->tab, (n+1) * sizeof(*base));
+		toml_table_t** base = (toml_table_t**) realloc(curtab->tab, (n+1) * sizeof(*base));
 		if (0 == base) outofmemory(ctx, FLINE);
 		curtab->tab = base;
 		
-		if (0 == (base[n] = calloc(1, sizeof(*base[n]))))
+		if (0 == (base[n] = (toml_table_t*) calloc(1, sizeof(*base[n]))))
 		    outofmemory(ctx, FLINE);
 		
 		if (0 == (base[n]->key = strdup(key)))
