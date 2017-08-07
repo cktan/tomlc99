@@ -5,7 +5,7 @@ CFLAGS = -std=c99 -Wall -Wextra
 CFLAGS += -O2 -DNDEBUG
 #CFLAGS += -O0 -g
 
-EXEC = toml_json
+EXEC = toml_json toml_cat
 
 LIB = libtoml.a
 
@@ -16,6 +16,8 @@ libtoml.a: toml.o
 	ar -rcs $@ $^
 
 toml_json: toml_json.c $(LIB)
+
+toml_cat: toml_cat.c $(LIB)
 
 prefix ?= /usr/local
 
