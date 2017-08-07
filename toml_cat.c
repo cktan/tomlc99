@@ -78,7 +78,7 @@ static void print_table(toml_table_t* curtab)
 	if (0 != (raw = toml_raw_in(curtab, key))) {
 	    printf("%s = %s\n", key, raw);
 	} else if (0 != (arr = toml_array_in(curtab, key))) {
-	    if (toml_array_typ(arr) == 't') {
+	    if (toml_array_kind(arr) == 't') {
 		print_array_of_tables(arr, key);
 	    }
 	    else {
@@ -119,7 +119,7 @@ static void print_array(toml_array_t* curarr)
     toml_table_t* tab;
     int i;
 
-    switch (toml_array_typ(curarr)) {
+    switch (toml_array_kind(curarr)) {
 
     case 'v': 
 	for (i = 0; 0 != (raw = toml_raw_at(curarr, i)); i++) {
