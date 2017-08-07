@@ -492,6 +492,7 @@ static char* normalize_key(context_t* ctx, token_t strtok)
 	if (strchr(ret, '\n')) {
 	    free(ret);
 	    bad_key_error(ctx, lineno);
+	    return NULL; /* Shut up scan-build. */
 	}
 	return ret;
     }
@@ -564,6 +565,7 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
     if (check_key(tab, newkey, 0, 0, 0)) {
 	free(newkey);
 	key_exists_error(ctx, keytok);
+	return NULL; /* Shut up scan-build. */
     }
 
     /* make a new entry */
@@ -572,12 +574,14 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
     if (0 == (base = realloc(tab->kval, (n+1) * sizeof(*base)))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     tab->kval = base;
     
     if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     dest = tab->kval[tab->nkval++];
 
@@ -608,6 +612,7 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
 	    return dest;
 	}
 	key_exists_error(ctx, keytok);
+	return NULL;
     }
 
     /* create a new table entry */
@@ -616,12 +621,14 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
     if (0 == (base = realloc(tab->tab, (n+1) * sizeof(*base)))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     tab->tab = base;
 	
     if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     dest = tab->tab[tab->ntab++];
     
@@ -646,12 +653,13 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
     /* if key exists: error out */
     toml_array_t* dest = 0;
     if (check_key(tab, newkey, 0, &dest, 0)) {
-	free(newkey); 		/* don't need this anymore */
+			free(newkey); 		/* don't need this anymore */
 
-	/* special case skip if exists? */
-	if (skip_if_exist) return dest;
+			/* special case skip if exists? */
+			if (skip_if_exist) return dest;
 	
-	key_exists_error(ctx, keytok);
+			key_exists_error(ctx, keytok);
+			return NULL;
     }
 
     /* make a new array entry */
@@ -660,12 +668,14 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
     if (0 == (base = realloc(tab->arr, (n+1) * sizeof(*base)))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     tab->arr = base;
 	
     if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
 	free(newkey);
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     dest = tab->arr[tab->narr++];
 
@@ -683,12 +693,14 @@ static toml_array_t* create_array_in_array(context_t* ctx,
     toml_array_t** base;
     if (0 == (base = realloc(parent->u.arr, (n+1) * sizeof(*base)))) {
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     parent->u.arr = base;
     
     if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
 	outofmemory(ctx, FLINE);
-    }
+	return NULL;
+	}
 
     return parent->u.arr[parent->nelem++];
 }
@@ -702,11 +714,13 @@ static toml_table_t* create_table_in_array(context_t* ctx,
     toml_table_t** base;
     if (0 == (base = realloc(parent->u.tab, (n+1) * sizeof(*base)))) {
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
     parent->u.tab = base;
     
     if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
 	outofmemory(ctx, FLINE);
+	return NULL;
     }
 
     return parent->u.tab[parent->nelem++];
@@ -1188,6 +1202,10 @@ toml_table_t* toml_parse_file(FILE* fp,
 	    return 0;
 	}
 	off += n;
+    }
+
+    if (buf == 0) {
+        return 0;
     }
 
     /* tag on a NUL to cap the string */
