@@ -1140,6 +1140,10 @@ static void parse_select(context_t* ctx)
 	/* [[x.y.z]] -> create z = [] in x.y */
 	toml_array_t* arr = create_keyarray_in_table(ctx, ctx->curtab, z,
 						     1 /*skip_if_exist*/);
+        if (!arr) {
+            e_syntax_error(ctx, z.lineno, "key exists");
+            return;
+        }
 	if (arr->kind == 0) arr->kind = 't';
 	if (arr->kind != 't') {
             e_syntax_error(ctx, z.lineno, "array mismatch");
