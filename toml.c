@@ -37,7 +37,11 @@ SOFTWARE.
 char* strndup(const char* s, size_t n)
 {
     size_t len = strnlen(s, n);
+#ifdef __GNUC__
+    char* p = calloc(len+1, sizeof(const char*));
+#else
     char* p = malloc(s, len+1);
+#endif
     if (p) {
 	memcpy(p, s, len);
 	p[len] = 0;
