@@ -9,7 +9,7 @@ parses this config file:
 
 ```
 [server]
-    host = www.example.com
+    host = "www.example.com"
     port = 80
 ```
 
