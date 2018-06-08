@@ -71,9 +71,11 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
     if (0x6 == (i >> 5)) {
 	if (len < 2) return -1;
 	v = i & 0x1f;
-	i = *(++buf);
-	if (0x2 != (i >> 6)) return -1;
-	v = (v << 6) | (i & 0x3f);
+        for (int j = 0; j < 1; j++) {
+            i = *buf++;
+            if (0x2 != (i >> 6)) return -1;
+            v = (v << 6) | (i & 0x3f);
+        }
 	return *ret = v, (const char*) buf - orig;
     }
 
@@ -84,7 +86,7 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (len < 3) return -1;
 	v = i & 0x0F;
 	for (int j = 0; j < 2; j++) {
-	    i = *(++buf);
+	    i = *buf++;
 	    if (0x2 != (i >> 6)) return -1;
 	    v = (v << 6) | (i & 0x3f);
 	}
@@ -98,7 +100,7 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (len < 4) return -1;
 	v = i & 0x07;
 	for (int j = 0; j < 3; j++) {
-	    i = *(++buf);
+	    i = *buf++;
 	    if (0x2 != (i >> 6)) return -1;
 	    v = (v << 6) | (i & 0x3f);
 	}
@@ -112,7 +114,7 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (len < 5) return -1;
 	v = i & 0x03;
 	for (int j = 0; j < 4; j++) {
-	    i = *(++buf);
+	    i = *buf++;
 	    if (0x2 != (i >> 6)) return -1;
 	    v = (v << 6) | (i & 0x3f);
 	}
@@ -126,7 +128,7 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (len < 6) return -1;
 	v = i & 0x01;
 	for (int j = 0; j < 5; j++) {
-	    i = *(++buf);
+	    i = *buf++;
 	    if (0x2 != (i >> 6)) return -1;
 	    v = (v << 6) | (i & 0x3f);
 	}
