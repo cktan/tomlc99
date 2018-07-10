@@ -141,6 +141,9 @@ static void print_array(toml_array_t* curarr)
 	printf("\n");
 	break;
 	
+    case '\0':
+	break;
+
     default:
 	abort();
     }
