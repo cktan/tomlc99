@@ -63,6 +63,9 @@ TOML_EXTERN toml_table_t* toml_table_in(toml_table_t* tab, const char* key);
 /* Return the array kind: 't'able, 'a'rray, 'v'alue */
 TOML_EXTERN char toml_array_kind(toml_array_t* arr);
 
+/* Return the number of elements in the array */
+TOML_EXTERN int toml_array_nelem(toml_array_t* arr);
+
 /* Return the number of key-values in a table */
 TOML_EXTERN int toml_table_nkval(toml_table_t* tab);
 

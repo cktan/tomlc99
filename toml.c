@@ -1610,6 +1610,11 @@ char toml_array_kind(toml_array_t* arr)
 }
 
 
+int toml_array_nelem(toml_array_t* arr)
+{
+    return arr->nelem;
+}
+
 int toml_table_nkval(toml_table_t* tab)
 {
   return tab->nkval;
