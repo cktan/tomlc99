@@ -1610,6 +1610,20 @@ char toml_array_kind(toml_array_t* arr)
 }
 
 
+int toml_table_nkval(toml_table_t* tab)
+{
+  return tab->nkval;
+}
+
+int toml_table_narr(toml_table_t* tab)
+{
+  return tab->narr;
+}
+
+int toml_table_ntab(toml_table_t* tab)
+{
+  return tab->ntab;
+}
 
 toml_array_t* toml_array_at(toml_array_t* arr, int idx)
 {
