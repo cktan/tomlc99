@@ -1,7 +1,7 @@
 CC = gcc 
 CFILES = toml.c
 
-CFLAGS = -std=c99 -Wall -Wextra 
+CFLAGS = -std=c99 -Wall -Wextra -Wcast-qual
 CFLAGS += -O2 -DNDEBUG
 #CFLAGS += -O0 -g
 

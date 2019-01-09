@@ -263,7 +263,19 @@ struct toml_table_t {
 };
 
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
 static inline void xfree(const void* x) { if (x) free((void*)x); }
+#pragma clang diagnostic pop
+#elif __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+static inline void xfree(const void* x) { if (x) free((void*)x); }
+#pragma GCC diagnostic pop
+#else
+static inline void xfree(const void* x) { if (x) free((void*)x); }
+#endif
 
 
 enum tokentype_t {
