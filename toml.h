@@ -63,6 +63,24 @@ TOML_EXTERN toml_table_t* toml_table_in(toml_table_t* tab, const char* key);
 /* Return the array kind: 't'able, 'a'rray, 'v'alue */
 TOML_EXTERN char toml_array_kind(toml_array_t* arr);
 
+/* Return the number of elements in the array */
+TOML_EXTERN int toml_array_nelem(toml_array_t* arr);
+
+/* Return the key of an array */
+TOML_EXTERN const char* toml_array_key(toml_array_t* arr);
+
+/* Return the number of key-values in a table */
+TOML_EXTERN int toml_table_nkval(toml_table_t* tab);
+
+/* Return the number of arrays in a table */
+TOML_EXTERN int toml_table_narr(toml_table_t* tab);
+
+/* Return the number of sub-tables in a table */
+TOML_EXTERN int toml_table_ntab(toml_table_t* tab);
+
+/* Return the key of a table*/
+TOML_EXTERN const char* toml_table_key(toml_table_t* tab);
+
 /* Deref array by index. Return the element at idx or 0 if out of range. */
 TOML_EXTERN const char* toml_raw_at(toml_array_t* arr, int idx);
 TOML_EXTERN toml_array_t* toml_array_at(toml_array_t* arr, int idx);

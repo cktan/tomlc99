@@ -1610,6 +1610,35 @@ char toml_array_kind(toml_array_t* arr)
 }
 
 
+int toml_array_nelem(toml_array_t* arr)
+{
+    return arr->nelem;
+}
+
+const char* toml_array_key(toml_array_t* arr)
+{
+  return arr ? arr->key : (const char*) NULL;
+}
+
+int toml_table_nkval(toml_table_t* tab)
+{
+  return tab->nkval;
+}
+
+int toml_table_narr(toml_table_t* tab)
+{
+  return tab->narr;
+}
+
+int toml_table_ntab(toml_table_t* tab)
+{
+  return tab->ntab;
+}
+
+const char* toml_table_key(toml_table_t* tab)
+{
+  return tab ? tab->key : (const char*) NULL;
+}
 
 toml_array_t* toml_array_at(toml_array_t* arr, int idx)
 {
