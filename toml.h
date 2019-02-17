@@ -25,6 +25,11 @@ SOFTWARE.
 #ifndef TOML_H
 #define TOML_H
 
+
+#include <stdio.h>
+#include <stdint.h>
+
+
 #ifdef __cplusplus
 #define TOML_EXTERN extern "C"
 #else
@@ -38,16 +43,16 @@ typedef struct toml_array_t toml_array_t;
  * Caller must toml_free(the-return-value) after use.
  */
 TOML_EXTERN toml_table_t* toml_parse_file(FILE* fp, 
-					  char* errbuf,
-					  int errbufsz);
+                                          char* errbuf,
+                                          int errbufsz);
 
 /* Parse a string containing the full config. 
  * Return a table on success, or 0 otherwise.
  * Caller must toml_free(the-return-value) after use.
  */
 TOML_EXTERN toml_table_t* toml_parse(char* conf, /* NUL terminated, please. */
-				     char* errbuf,
-				     int errbufsz);
+                                     char* errbuf,
+                                     int errbufsz);
 
 /* Free the table returned by toml_parse() or toml_parse_file(). */
 TOML_EXTERN void toml_free(toml_table_t* tab);
@@ -108,9 +113,9 @@ TOML_EXTERN int toml_rtod(const char* s, double* ret);
 typedef struct toml_timestamp_t toml_timestamp_t;
 struct toml_timestamp_t {
     struct { /* internal. do not use. */
-	int year, month, day;
-	int hour, minute, second;
-	char z[10];
+        int year, month, day;
+        int hour, minute, second;
+        char z[10];
     } __buffer;
     int *year, *month, *day;
     int *hour, *minute, *second;
