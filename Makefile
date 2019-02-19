@@ -2,8 +2,13 @@ CC = gcc
 CFILES = toml.c
 
 CFLAGS = -std=c99 -Wall -Wextra 
-CFLAGS += -O2 -DNDEBUG
-#CFLAGS += -O0 -g
+# to compile for debug: make DEBUG=1
+# to compile for no debug: make
+ifdef DEBUG
+    CFLAGS += -O0 -g
+else
+    CFLAGS += -O2 -DNDEBUG
+endif
 
 EXEC = toml_json toml_cat
 
