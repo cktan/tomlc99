@@ -1609,6 +1609,17 @@ char toml_array_kind(toml_array_t* arr)
     return arr->kind;
 }
 
+char toml_array_type(toml_array_t* arr)
+{
+    if (arr->kind != 'v')
+        return 0;
+
+    if (arr->nelem == 0)
+        return 0;
+
+    return arr->type;
+}
+
 
 int toml_array_nelem(toml_array_t* arr)
 {

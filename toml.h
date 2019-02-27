@@ -68,6 +68,13 @@ TOML_EXTERN toml_table_t* toml_table_in(toml_table_t* tab, const char* key);
 /* Return the array kind: 't'able, 'a'rray, 'v'alue */
 TOML_EXTERN char toml_array_kind(toml_array_t* arr);
 
+/* For array kind 'v'alue, return the type of values 
+   i:int, d:double, b:bool, s:string, t:time, D:date, T:timestamp
+   0 if unknown
+*/
+TOML_EXTERN char toml_array_type(toml_array_t* arr);
+
+
 /* Return the number of elements in the array */
 TOML_EXTERN int toml_array_nelem(toml_array_t* arr);
 
