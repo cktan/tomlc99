@@ -1701,7 +1701,8 @@ int toml_rtots(const char* src_, toml_timestamp_t* ret)
         *ret->year  = val;
         
         if (*p) {
-            if (*p != 'T') return -1;
+            // parse the T or space separator
+            if (*p != 'T' && *p != ' ') return -1;
             p++;
         }
     }
