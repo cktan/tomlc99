@@ -1788,6 +1788,7 @@ int toml_rtoi(const char* src, int64_t* ret_)
     char* p = buf;
     char* q = p + sizeof(buf);
     const char* s = src;
+    int base = 0;
     int64_t dummy;
     int64_t* ret = ret_ ? ret_ : &dummy;
     
@@ -1798,9 +1799,15 @@ int toml_rtoi(const char* src, int64_t* ret_)
 
     /* if 0 ... */
     if ('0' == s[0]) {
-        /* ensure no other digits after it */
-        if (s[1]) return -1;
-        return *ret = 0, 0;
+        switch (s[1]) {
+        case 'x': base = 16; s += 2; break;
+        case 'o': base = 8; s += 2; break;
+        case 'b': base = 2; s += 2; break;
+        case '\0': return *ret = 0, 0;
+        default:
+            /* ensure no other digits after it */
+            if (s[1]) return -1;
+        }
     }
 
     /* just strip underscores and pass to strtoll */
@@ -1816,7 +1823,7 @@ int toml_rtoi(const char* src, int64_t* ret_)
     /* Run strtoll on buf to get the integer */
     char* endp;
     errno = 0;
-    *ret = strtoll(buf, &endp, 0);
+    *ret = strtoll(buf, &endp, base);
     return (errno || *endp) ? -1 : 0;
 }
 
