@@ -774,7 +774,10 @@ static void parse_table(context_t* ctx, toml_table_t* tab)
     EAT_TOKEN(ctx, LBRACE);
 
     for (;;) {
-        SKIP_NEWLINES(ctx);
+		if (ctx->tok.tok == NEWLINE) {
+            e_syntax_error(ctx, ctx->tok.lineno, "newline not allowed in inline table");
+			return;				/* not reached */
+		}
 
         /* until } */
         if (ctx->tok.tok == RBRACE) break;
@@ -784,7 +787,11 @@ static void parse_table(context_t* ctx, toml_table_t* tab)
             return;             /* not reached */
         }
         parse_keyval(ctx, tab);
-        SKIP_NEWLINES(ctx);
+		
+		if (ctx->tok.tok == NEWLINE) {
+            e_syntax_error(ctx, ctx->tok.lineno, "newline not allowed in inline table");
+			return;				/* not reached */
+		}
 
         /* on comma, continue to scan for next keyval */
         if (ctx->tok.tok == COMMA) {
@@ -1113,15 +1120,17 @@ static void walk_tabpath(context_t* ctx)
 /* handle lines like [x.y.z] or [[x.y.z]] */
 static void parse_select(context_t* ctx)
 {
-    int count_lbracket = 0;
-    if (ctx->tok.tok != LBRACKET) {
-        e_internal_error(ctx, FLINE);
-        return;                 /* not reached */
-    }
-    count_lbracket++;
+    assert(ctx->tok.tok == LBRACKET);
+	
+	/* true if [[ */
+	int llb = (ctx->tok.ptr + 1 < ctx->stop && ctx->tok.ptr[1] == '[');
+	/* need to detect '[[' on our own because next_token() will skip whitespace, 
+	   and '[ [' would be taken as '[[', which is wrong. */
+
+	/* eat [ or [[ */
     next_token(ctx, 1 /* DOT IS SPECIAL */);
-    if (ctx->tok.tok == LBRACKET) {
-        count_lbracket++;
+	if (llb) {
+		assert(ctx->tok.tok == LBRACKET);
         next_token(ctx, 1 /* DOT IS SPECIAL */);
     }
 
@@ -1132,10 +1141,11 @@ static void parse_select(context_t* ctx)
     token_t z = ctx->tpath.tok[ctx->tpath.top-1];
     free(ctx->tpath.key[ctx->tpath.top-1]);
     ctx->tpath.top--;
-    
+
+	/* set up ctx->curtab */
     walk_tabpath(ctx);
 
-    if (count_lbracket == 1) {
+    if (! llb) {
         /* [x.y.z] -> create z = {} in x.y */
         ctx->curtab = create_keytable_in_table(ctx, ctx->curtab, z);
     } else {
@@ -1183,15 +1193,15 @@ static void parse_select(context_t* ctx)
         e_syntax_error(ctx, ctx->tok.lineno, "expects ]");
         return;                 /* not reached */
     }
-    EAT_TOKEN(ctx, RBRACKET);
-
-    if (count_lbracket == 2) {
-        if (ctx->tok.tok != RBRACKET) {
+	if (llb) {
+		if (! (ctx->tok.ptr + 1 < ctx->stop && ctx->tok.ptr[1] == ']')) {
             e_syntax_error(ctx, ctx->tok.lineno, "expects ]]");
-            return;             /* not reached */
-        }
-        EAT_TOKEN(ctx, RBRACKET);
-    }
+			return; /* not reached */
+		}
+		EAT_TOKEN(ctx, RBRACKET);
+	}
+	EAT_TOKEN(ctx, RBRACKET);
+		
     if (ctx->tok.tok != NEWLINE) {
         e_syntax_error(ctx, ctx->tok.lineno, "extra chars after ] or ]]");
         return;                 /* not reached */
@@ -1681,7 +1691,7 @@ int toml_rtots(const char* src_, toml_timestamp_t* ret)
     
     memset(ret, 0, sizeof(*ret));
 
-    /* parse date */
+    /* parse date YYYY-MM-DD */
     val = 0;
     if (q - p > 4 && p[4] == '-') {
         for (i = 0; i < 10; i++, p++) {
@@ -1708,7 +1718,7 @@ int toml_rtots(const char* src_, toml_timestamp_t* ret)
     }
     if (q == p) return 0;
 
-    /* parse time */
+    /* parse time HH:MM:SS */
     val = 0;
     if (q - p < 8) return -1;
     for (i = 0; i < 8; i++, p++) {
@@ -1727,8 +1737,22 @@ int toml_rtots(const char* src_, toml_timestamp_t* ret)
     *ret->minute = val % 100; val /= 100;
     *ret->hour   = val;
     
-    /* skip fractional second */
-    if (*p == '.') for (p++; '0' <= *p && *p <= '9'; p++);
+    /* parse millisec */
+    if (*p == '.') {
+		val = 0;
+		p++;
+		if ('0' <= *p && *p <= '9') {
+			val = (*p++ - '0') * 100;
+			if ('0' <= *p && *p <= '9') {
+				val += (*p++ - '0') * 10;
+				if ('0' <= *p && *p <= '9') {
+					val += (*p++ - '0');
+				}
+			}
+		}
+		ret->millisec = &ret->__buffer.millisec;
+		*ret->millisec = val;
+	}
     if (q == p) return 0;
     
     /* parse and copy Z */
@@ -1792,10 +1816,14 @@ int toml_rtoi(const char* src, int64_t* ret_)
     int64_t dummy;
     int64_t* ret = ret_ ? ret_ : &dummy;
     
-    if (*s == '+')
-        *p++ = *s++;
-    else if (*s == '-')
-        *p++ = *s++;
+
+    /* allow +/- */
+	if (s[0] == '+' || s[0] == '-')
+		*p++ = *s++;
+	
+	/* disallow +_100 */
+	if (s[0] == '_')
+		return -1;
 
     /* if 0 ... */
     if ('0' == s[0]) {
@@ -1813,9 +1841,20 @@ int toml_rtoi(const char* src, int64_t* ret_)
     /* just strip underscores and pass to strtoll */
     while (*s && p < q) {
         int ch = *s++;
-        if (ch == '_') ; else *p++ = ch;
+		switch (ch) {
+		case '_':
+			// disallow '__'
+			if (s[0] == '_') return -1; 
+			continue; 			/* skip _ */
+		default:
+			break;
+		}
+        *p++ = ch;
     }
     if (*s || p == q) return -1;
+
+	/* last char cannot be '_' */
+	if (s[-1] == '_') return -1;
     
     /* cap with NUL */
     *p = 0;
@@ -1828,31 +1867,54 @@ int toml_rtoi(const char* src, int64_t* ret_)
 }
 
 
-int toml_rtod(const char* src, double* ret_)
+int toml_rtod_ex(const char* src, double* ret_, char* buf, int buflen)
 {
     if (!src) return -1;
     
-    char buf[100];
     char* p = buf;
-    char* q = p + sizeof(buf);
+    char* q = p + buflen;
     const char* s = src;
     double dummy;
     double* ret = ret_ ? ret_ : &dummy;
+	
 
-    /* check for special cases */
-    if (s[0] == '+' || s[0] == '-') *p++ = *s++;
-    if (s[0] == '.') return -1; /* no leading zero */
-    if (s[0] == '0') {
-        /* zero must be followed by . or NUL */
-        if (s[1] && s[1] != '.') return -1;
-    }
+    /* allow +/- */
+	if (s[0] == '+' || s[0] == '-')
+		*p++ = *s++;
+
+	/* disallow +_1.00 */
+	if (s[0] == '_')
+		return -1;
+
+	/* disallow +.99 */
+	if (s[0] == '.')
+		return -1;
+		
+	/* zero must be followed by . or NUL */
+	if (s[0] == '0' && s[1] && s[1] != '.')
+		return -1;
 
     /* just strip underscores and pass to strtod */
     while (*s && p < q) {
         int ch = *s++;
-        if (ch == '_') ; else *p++ = ch;
+		switch (ch) {
+		case '.':
+			if (s[-2] == '_') return -1;
+			if (s[0] == '_') return -1;
+			break;
+		case '_':
+			// disallow '__'
+			if (s[0] == '_') return -1; 
+			continue;			/* skip _ */
+		default:
+			break;
+		}
+        *p++ = ch;
     }
-    if (*s || p == q) return -1;
+    if (*s || p == q) return -1; /* reached end of string or buffer is full? */
+	
+	/* last char cannot be '_' */
+	if (s[-1] == '_') return -1;
 
     if (p != buf && p[-1] == '.') 
         return -1; /* no trailing zero */
@@ -1865,6 +1927,12 @@ int toml_rtod(const char* src, double* ret_)
     errno = 0;
     *ret = strtod(buf, &endp);
     return (errno || *endp) ? -1 : 0;
+}
+
+int toml_rtod(const char* src, double* ret_)
+{
+	char buf[100];
+	return toml_rtod_ex(src, ret_, buf, sizeof(buf));
 }
 
 

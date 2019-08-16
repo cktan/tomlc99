@@ -112,6 +112,8 @@ TOML_EXTERN int toml_rtoi(const char* s, int64_t* ret);
 
 /* Raw to Double. Return 0 on success, -1 otherwise. */
 TOML_EXTERN int toml_rtod(const char* s, double* ret);
+/* Same as toml_rtod, but return the sanitized double in string form as well */
+TOML_EXTERN int toml_rtod_ex(const char* s, double* ret, char* buf, int buflen);
 
 /* Timestamp types. The year, month, day, hour, minute, second, z 
  * fields may be NULL if they are not relevant. e.g. In a DATE
@@ -121,11 +123,11 @@ typedef struct toml_timestamp_t toml_timestamp_t;
 struct toml_timestamp_t {
     struct { /* internal. do not use. */
         int year, month, day;
-        int hour, minute, second;
+        int hour, minute, second, millisec;
         char z[10];
     } __buffer;
     int *year, *month, *day;
-    int *hour, *minute, *second;
+    int *hour, *minute, *second, *millisec;
     char* z;
 };
 
