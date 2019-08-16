@@ -103,7 +103,7 @@ static void print_table(toml_table_t* curtab)
     for (i = 0; 0 != (key = toml_key_in(curtab, i)); i++) {
 
 	printf("%s\"%s\":", i > 0 ? "," : "", key);
-	
+
 	if (0 != (raw = toml_raw_in(curtab, key))) {
 	    print_raw(raw);
 	} else if (0 != (arr = toml_array_in(curtab, key))) {
@@ -121,7 +121,7 @@ static void print_table_array(toml_array_t* curarr)
 {
     int i;
     toml_table_t* tab;
-    
+
     printf("[");
     for (i = 0; 0 != (tab = toml_table_at(curarr, i)); i++) {
 	printf("%s", i > 0 ? "," : "");
@@ -139,19 +139,19 @@ static void print_array(toml_array_t* curarr)
     if (toml_array_kind(curarr) == 't') {
 	print_table_array(curarr);
 	return;
-    } 
+    }
 
     printf("{\"type\":\"array\",\"value\":[");
     switch (toml_array_kind(curarr)) {
 
-    case 'v': 
+    case 'v':
 	for (i = 0; 0 != (raw = toml_raw_at(curarr, i)); i++) {
 	    printf("%s", i > 0 ? "," : "");
 	    print_raw(raw);
 	}
 	break;
 
-    case 'a': 
+    case 'a':
 	for (i = 0; 0 != (arr = toml_array_at(curarr, i)); i++) {
 	    printf("%s", i > 0 ? "," : "");
 	    print_array(arr);
@@ -169,7 +169,7 @@ static void print_array(toml_array_t* curarr)
 static void cat(FILE* fp)
 {
     char  errbuf[200];
-    
+
     toml_table_t* tab = toml_parse_file(fp, errbuf, sizeof(errbuf));
     if (!tab) {
 	fprintf(stderr, "ERROR: %s\n", errbuf);
@@ -190,7 +190,7 @@ int main(int argc, const char* argv[])
 	cat(stdin);
     } else {
 	for (i = 1; i < argc; i++) {
-	    
+
 	    FILE* fp = fopen(argv[i], "r");
 	    if (!fp) {
 		fprintf(stderr, "ERROR: cannot open %s: %s\n",

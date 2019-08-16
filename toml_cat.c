@@ -121,26 +121,26 @@ static void print_array(toml_array_t* curarr)
 
     switch (toml_array_kind(curarr)) {
 
-    case 'v': 
+    case 'v':
 	for (i = 0; 0 != (raw = toml_raw_at(curarr, i)); i++) {
 	    printf("  %d: %s,\n", i, raw);
 	}
 	break;
 
-    case 'a': 
+    case 'a':
 	for (i = 0; 0 != (arr = toml_array_at(curarr, i)); i++) {
 	    printf("  %d: \n", i);
 	    print_array(arr);
 	}
 	break;
-	    
-    case 't': 
+
+    case 't':
 	for (i = 0; 0 != (tab = toml_table_at(curarr, i)); i++) {
 	    print_table(tab);
 	}
 	printf("\n");
 	break;
-	
+
     case '\0':
 	break;
 
@@ -154,7 +154,7 @@ static void print_array(toml_array_t* curarr)
 static void cat(FILE* fp)
 {
     char  errbuf[200];
-    
+
     toml_table_t* tab = toml_parse_file(fp, errbuf, sizeof(errbuf));
     if (!tab) {
 	fprintf(stderr, "ERROR: %s\n", errbuf);
@@ -178,7 +178,7 @@ int main(int argc, const char* argv[])
 	cat(stdin);
     } else {
 	for (i = 1; i < argc; i++) {
-	    
+
 	    FILE* fp = fopen(argv[i], "r");
 	    if (!fp) {
 		fprintf(stderr, "ERROR: cannot open %s: %s\n",
