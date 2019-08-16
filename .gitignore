@@ -27,6 +27,8 @@
 *.i*86
 *.x86_64
 *.hex
+toml_cat
+toml_json
 
 # Debug files
 *.dSYM/
