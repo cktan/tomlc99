@@ -1,4 +1,4 @@
-CC = gcc 
+CC = cc 
 CFILES = toml.c
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
@@ -38,3 +38,4 @@ install: all
 
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
+
