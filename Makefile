@@ -1,4 +1,3 @@
-CC = gcc 
 CFILES = toml.c
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
