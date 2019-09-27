@@ -1,26 +1,28 @@
 /*
-MIT License
 
-Copyright (c) 2017 - 2019 CK Tan 
-https://github.com/cktan/tomlc99
+  MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+  Copyright (c) 2017 - 2019 CK Tan 
+  https://github.com/cktan/tomlc99
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 */
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
@@ -33,11 +35,35 @@ SOFTWARE.
 #include <string.h>
 #include "toml.h"
 
+
+static void* (*ppmalloc)(size_t) = malloc;
+static void (*ppfree)(void*) = free;
+static void* (*ppcalloc)(size_t, size_t) = calloc;
+static void* (*pprealloc)(void*, size_t) = realloc;
+
+void toml_set_memutil(void* (*xxmalloc)(size_t),
+					  void  (*xxfree)(void*),
+					  void* (*xxcalloc)(size_t, size_t),
+					  void* (*xxrealloc)(void*, size_t))
+{
+	ppmalloc = xxmalloc;
+	ppfree = xxfree;
+	ppcalloc = xxcalloc;
+	pprealloc = xxrealloc;
+}
+
+
+#define MALLOC(a)     ppmalloc(a)
+#define FREE(a)       ppfree(a)
+#define CALLOC(a,b)   ppcalloc(a,b)
+#define REALLOC(a,b)  pprealloc(a,b)
+
+
 #ifdef _WIN32
 char* strndup(const char* s, size_t n)
 {
     size_t len = strnlen(s, n);
-    char* p = malloc(len+1);
+    char* p = MALLOC(len+1);
     if (p) {
         memcpy(p, s, len);
         p[len] = 0;
@@ -263,7 +289,7 @@ struct toml_table_t {
 };
 
 
-static inline void xfree(const void* x) { if (x) free((void*)x); }
+static inline void xfree(const void* x) { if (x) FREE((void*)x); }
 
 
 enum tokentype_t {
@@ -390,7 +416,7 @@ static char* normalize_string(const char* src, int srclen,
     /* scan forward on src */
     for (;;) {
         if (off >=  max - 10) { /* have some slack for misc stuff */
-            char* x = realloc(dst, max += 100);
+            char* x = REALLOC(dst, max += 100);
             if (!x) {
                 xfree(dst);
                 snprintf(errbuf, errbufsz, "out of memory");
@@ -412,7 +438,7 @@ static char* normalize_string(const char* src, int srclen,
         /* ch was backslash. we expect the escape char. */
         if (sp >= sq) {
             snprintf(errbuf, errbufsz, "last backslash is invalid");
-            free(dst);
+            xfree(dst);
             return 0;
         }
 
@@ -436,7 +462,7 @@ static char* normalize_string(const char* src, int srclen,
                 for (int i = 0; i < nhex; i++) {
                     if (sp >= sq) {
                         snprintf(errbuf, errbufsz, "\\%c expects %d hex chars", ch, nhex);
-                        free(dst);
+                        xfree(dst);
                         return 0;
                     }
                     ch = *sp++;
@@ -445,7 +471,7 @@ static char* normalize_string(const char* src, int srclen,
                         : (('A' <= ch && ch <= 'F') ? ch - 'A' + 10 : -1);
                     if (-1 == v) {
                         snprintf(errbuf, errbufsz, "invalid hex chars for \\u or \\U");
-                        free(dst);
+                        xfree(dst);
                         return 0;
                     }
                     ucs = ucs * 16 + v;
@@ -453,7 +479,7 @@ static char* normalize_string(const char* src, int srclen,
                 int n = toml_ucs_to_utf8(ucs, &dst[off]);
                 if (-1 == n) {
                     snprintf(errbuf, errbufsz, "illegal ucs code in \\u or \\U");
-                    free(dst);
+                    xfree(dst);
                     return 0;
                 }
                 off += n;
@@ -469,7 +495,7 @@ static char* normalize_string(const char* src, int srclen,
         case '\\': ch = '\\'; break;
         default: 
             snprintf(errbuf, errbufsz, "illegal escape char \\%c", ch);
-            free(dst);
+            xfree(dst);
             return 0;
         }
 
@@ -517,7 +543,7 @@ static char* normalize_key(context_t* ctx, token_t strtok)
 
         /* newlines are not allowed in keys */
         if (strchr(ret, '\n')) {
-            free(ret);
+            xfree(ret);
             e_bad_key_error(ctx, lineno);
             return 0;           /* not reached */
         }
@@ -594,7 +620,7 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
     /* if key exists: error out. */
     toml_keyval_t* dest = 0;
     if (check_key(tab, newkey, 0, 0, 0)) {
-        free(newkey);
+        xfree(newkey);
         e_key_exists_error(ctx, keytok);
         return 0;               /* not reached */
     }
@@ -602,15 +628,15 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
     /* make a new entry */
     int n = tab->nkval;
     toml_keyval_t** base;
-    if (0 == (base = (toml_keyval_t**) realloc(tab->kval, (n+1) * sizeof(*base)))) {
-        free(newkey);
+    if (0 == (base = (toml_keyval_t**) REALLOC(tab->kval, (n+1) * sizeof(*base)))) {
+        xfree(newkey);
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
     tab->kval = base;
     
-    if (0 == (base[n] = (toml_keyval_t*) calloc(1, sizeof(*base[n])))) {
-        free(newkey);
+    if (0 == (base[n] = (toml_keyval_t*) CALLOC(1, sizeof(*base[n])))) {
+        xfree(newkey);
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
@@ -634,7 +660,7 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
     /* if key exists: error out */
     toml_table_t* dest = 0;
     if (check_key(tab, newkey, 0, 0, &dest)) {
-        free(newkey);           /* don't need this anymore */
+        xfree(newkey);           /* don't need this anymore */
         
         /* special case: if table exists, but was created implicitly ... */
         if (dest && dest->implicit) {
@@ -649,15 +675,15 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
     /* create a new table entry */
     int n = tab->ntab;
     toml_table_t** base;
-    if (0 == (base = (toml_table_t**) realloc(tab->tab, (n+1) * sizeof(*base)))) {
-        free(newkey);
+    if (0 == (base = (toml_table_t**) REALLOC(tab->tab, (n+1) * sizeof(*base)))) {
+        xfree(newkey);
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
     tab->tab = base;
         
-    if (0 == (base[n] = (toml_table_t*) calloc(1, sizeof(*base[n])))) {
-        free(newkey);
+    if (0 == (base[n] = (toml_table_t*) CALLOC(1, sizeof(*base[n])))) {
+        xfree(newkey);
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
@@ -684,7 +710,7 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
     /* if key exists: error out */
     toml_array_t* dest = 0;
     if (check_key(tab, newkey, 0, &dest, 0)) {
-        free(newkey);           /* don't need this anymore */
+        xfree(newkey);           /* don't need this anymore */
 
         /* special case skip if exists? */
         if (skip_if_exist) return dest;
@@ -696,15 +722,15 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
     /* make a new array entry */
     int n = tab->narr;
     toml_array_t** base;
-    if (0 == (base = (toml_array_t**) realloc(tab->arr, (n+1) * sizeof(*base)))) {
-        free(newkey);
+    if (0 == (base = (toml_array_t**) REALLOC(tab->arr, (n+1) * sizeof(*base)))) {
+        xfree(newkey);
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
     tab->arr = base;
         
-    if (0 == (base[n] = (toml_array_t*) calloc(1, sizeof(*base[n])))) {
-        free(newkey);
+    if (0 == (base[n] = (toml_array_t*) CALLOC(1, sizeof(*base[n])))) {
+        xfree(newkey);
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
@@ -722,13 +748,13 @@ static toml_array_t* create_array_in_array(context_t* ctx,
 {
     int n = parent->nelem;
     toml_array_t** base;
-    if (0 == (base = (toml_array_t**) realloc(parent->u.arr, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_array_t**) REALLOC(parent->u.arr, (n+1) * sizeof(*base)))) {
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
     parent->u.arr = base;
     
-    if (0 == (base[n] = (toml_array_t*) calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_array_t*) CALLOC(1, sizeof(*base[n])))) {
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
@@ -743,13 +769,13 @@ static toml_table_t* create_table_in_array(context_t* ctx,
 {
     int n = parent->nelem;
     toml_table_t** base;
-    if (0 == (base = (toml_table_t**) realloc(parent->u.tab, (n+1) * sizeof(*base)))) {
+    if (0 == (base = (toml_table_t**) REALLOC(parent->u.tab, (n+1) * sizeof(*base)))) {
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
     parent->u.tab = base;
     
-    if (0 == (base[n] = (toml_table_t*) calloc(1, sizeof(*base[n])))) {
+    if (0 == (base[n] = (toml_table_t*) CALLOC(1, sizeof(*base[n])))) {
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
@@ -852,7 +878,7 @@ static void parse_array(context_t* ctx, toml_array_t* arr)
                 }
 
                 /* make a new value in array */
-                char** tmp = (char**) realloc(arr->u.val, (arr->nelem+1) * sizeof(*tmp));
+                char** tmp = (char**) REALLOC(arr->u.val, (arr->nelem+1) * sizeof(*tmp));
                 if (!tmp) {
                     e_outofmemory(ctx, FLINE);
                     return;     /* not reached */
@@ -1083,14 +1109,14 @@ static void walk_tabpath(context_t* ctx)
         default:
             { /* Not found. Let's create an implicit table. */
                 int n = curtab->ntab;
-                toml_table_t** base = (toml_table_t**) realloc(curtab->tab, (n+1) * sizeof(*base));
+                toml_table_t** base = (toml_table_t**) REALLOC(curtab->tab, (n+1) * sizeof(*base));
                 if (0 == base) {
                     e_outofmemory(ctx, FLINE);
                     return;     /* not reached */
                 }
                 curtab->tab = base;
                 
-                if (0 == (base[n] = (toml_table_t*) calloc(1, sizeof(*base[n])))) {
+                if (0 == (base[n] = (toml_table_t*) CALLOC(1, sizeof(*base[n])))) {
                     e_outofmemory(ctx, FLINE);
                     return;     /* not reached */
                 }
@@ -1139,7 +1165,7 @@ static void parse_select(context_t* ctx)
     /* For [x.y.z] or [[x.y.z]], remove z from tpath. 
      */
     token_t z = ctx->tpath.tok[ctx->tpath.top-1];
-    free(ctx->tpath.key[ctx->tpath.top-1]);
+    xfree(ctx->tpath.key[ctx->tpath.top-1]);
     ctx->tpath.top--;
 
 	/* set up ctx->curtab */
@@ -1166,14 +1192,14 @@ static void parse_select(context_t* ctx)
         toml_table_t* dest;
         {
             int n = arr->nelem;
-            toml_table_t** base = realloc(arr->u.tab, (n+1) * sizeof(*base));
+            toml_table_t** base = REALLOC(arr->u.tab, (n+1) * sizeof(*base));
             if (0 == base) {
                 e_outofmemory(ctx, FLINE);
                 return;         /* not reached */
             }
             arr->u.tab = base;
             
-            if (0 == (base[n] = calloc(1, sizeof(*base[n])))) {
+            if (0 == (base[n] = CALLOC(1, sizeof(*base[n])))) {
                 e_outofmemory(ctx, FLINE);
                 return;         /* not reached */
             }
@@ -1235,7 +1261,7 @@ toml_table_t* toml_parse(char* conf,
     ctx.tok.len = 0;
 
     // make a root table
-    if (0 == (ctx.root = calloc(1, sizeof(*ctx.root)))) {
+    if (0 == (ctx.root = CALLOC(1, sizeof(*ctx.root)))) {
         /* do not call outofmemory() here... setjmp not done yet */
         snprintf(ctx.errbuf, ctx.errbufsz, "ERROR: out of memory (%s)", FLINE);
         return 0;
@@ -1296,7 +1322,7 @@ toml_table_t* toml_parse_file(FILE* fp,
 
     /* prime the buf[] */
     bufsz = 1000;
-    if (! (buf = malloc(bufsz + 1))) {
+    if (! (buf = MALLOC(bufsz + 1))) {
         snprintf(errbuf, errbufsz, "out of memory");
         return 0;
     }
@@ -1306,7 +1332,7 @@ toml_table_t* toml_parse_file(FILE* fp,
         bufsz += 1000;
         
         /* Allocate 1 extra byte because we will tag on a NUL */
-        char* x = realloc(buf, bufsz + 1);
+        char* x = REALLOC(buf, bufsz + 1);
         if (!x) {
             snprintf(errbuf, errbufsz, "out of memory");
             xfree(buf);
@@ -1319,18 +1345,18 @@ toml_table_t* toml_parse_file(FILE* fp,
         if (ferror(fp)) {
             snprintf(errbuf, errbufsz, "%s",
                      errno ? strerror(errno) : "Error reading file");
-            free(buf);
+            xfree(buf);
             return 0;
         }
         off += n;
     }
 
     /* tag on a NUL to cap the string */
-    buf[off] = 0; /* we accounted for this byte in the realloc() above. */
+    buf[off] = 0; /* we accounted for this byte in the REALLOC() above. */
 
     /* parse it, cleanup and finish */
     toml_table_t* ret = toml_parse(buf, errbuf, errbufsz);
-    free(buf);
+    xfree(buf);
     return ret;
 }
 
