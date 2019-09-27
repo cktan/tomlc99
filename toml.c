@@ -58,9 +58,18 @@ void toml_set_memutil(void* (*xxmalloc)(size_t),
 #define CALLOC(a,b)   ppcalloc(a,b)
 #define REALLOC(a,b)  pprealloc(a,b)
 
+char* STRDUP(const char* s)
+{
+	int len = strlen(s);
+    char* p = MALLOC(len+1);
+    if (p) {
+        memcpy(p, s, len);
+        p[len] = 0;
+    }
+    return p;
+}
 
-#ifdef _WIN32
-char* strndup(const char* s, size_t n)
+char* STRNDUP(const char* s, size_t n)
 {
     size_t len = strnlen(s, n);
     char* p = MALLOC(len+1);
@@ -70,7 +79,7 @@ char* strndup(const char* s, size_t n)
     }
     return p;
 }
-#endif
+
 
 
 /**
@@ -528,7 +537,7 @@ static char* normalize_key(context_t* ctx, token_t strtok)
 
         if (ch == '\'') {
             /* for single quote, take it verbatim. */
-            if (! (ret = strndup(sp, sq - sp))) {
+            if (! (ret = STRNDUP(sp, sq - sp))) {
                 e_outofmemory(ctx, FLINE);
                 return 0;       /* not reached */
             }
@@ -561,7 +570,7 @@ static char* normalize_key(context_t* ctx, token_t strtok)
     }
 
     /* dup and return it */
-    if (! (ret = strndup(sp, sq - sp))) {
+    if (! (ret = STRNDUP(sp, sq - sp))) {
         e_outofmemory(ctx, FLINE);
         return 0;               /* not reached */
     }
@@ -884,7 +893,7 @@ static void parse_array(context_t* ctx, toml_array_t* arr)
                     return;     /* not reached */
                 }
                 arr->u.val = tmp;
-                if (! (val = strndup(val, vlen))) {
+                if (! (val = STRNDUP(val, vlen))) {
                     e_outofmemory(ctx, FLINE);
                     return;     /* not reached */
                 }
@@ -981,7 +990,7 @@ static void parse_keyval(context_t* ctx, toml_table_t* tab)
             toml_keyval_t* keyval = create_keyval_in_table(ctx, tab, key);
             token_t val = ctx->tok;
             assert(keyval->val == 0);
-            keyval->val = strndup(val.ptr, val.len);
+            keyval->val = STRNDUP(val.ptr, val.len);
             if (! keyval->val) {
                 e_outofmemory(ctx, FLINE);
                 return;         /* not reached */
@@ -1121,7 +1130,7 @@ static void walk_tabpath(context_t* ctx)
                     return;     /* not reached */
                 }
                 
-                if (0 == (base[n]->key = strdup(key))) {
+                if (0 == (base[n]->key = STRDUP(key))) {
                     e_outofmemory(ctx, FLINE);
                     return;     /* not reached */
                 }
@@ -1204,7 +1213,7 @@ static void parse_select(context_t* ctx)
                 return;         /* not reached */
             }
             
-            if (0 == (base[n]->key = strdup("__anon__"))) {
+            if (0 == (base[n]->key = STRDUP("__anon__"))) {
                 e_outofmemory(ctx, FLINE);
                 return;         /* not reached */
             }
@@ -2006,7 +2015,7 @@ int toml_rtos(const char* src, char** ret)
             else if (sp[0] == '\r' && sp[1] == '\n')
                 sp += 2;
 
-            *ret = kill_line_ending_backslash(strndup(sp, sq - sp));
+            *ret = kill_line_ending_backslash(STRNDUP(sp, sq - sp));
         } else {
             const char* sp = src + 1;
             const char* sq = src + srclen - 1;
@@ -2014,7 +2023,7 @@ int toml_rtos(const char* src, char** ret)
             if (! (sp <= sq && *sq == '\''))
                 return -1;
             /* copy from sp to p */
-            *ret = strndup(sp, sq - sp);
+            *ret = STRNDUP(sp, sq - sp);
         }
         return *ret ? 0 : -1;
     }
