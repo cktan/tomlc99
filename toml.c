@@ -42,7 +42,7 @@ static void* (*ppcalloc)(size_t, size_t) = calloc;
 static void* (*pprealloc)(void*, size_t) = realloc;
 
 void toml_set_memutil(void* (*xxmalloc)(size_t),
-					  void  (*xxfree)(void*),
+					  void	(*xxfree)(void*),
 					  void* (*xxcalloc)(size_t, size_t),
 					  void* (*xxrealloc)(void*, size_t))
 {
@@ -53,31 +53,31 @@ void toml_set_memutil(void* (*xxmalloc)(size_t),
 }
 
 
-#define MALLOC(a)     ppmalloc(a)
-#define FREE(a)       ppfree(a)
-#define CALLOC(a,b)   ppcalloc(a,b)
+#define MALLOC(a)	  ppmalloc(a)
+#define FREE(a)		  ppfree(a)
+#define CALLOC(a,b)	  ppcalloc(a,b)
 #define REALLOC(a,b)  pprealloc(a,b)
 
 char* STRDUP(const char* s)
 {
 	int len = strlen(s);
-    char* p = MALLOC(len+1);
-    if (p) {
-        memcpy(p, s, len);
-        p[len] = 0;
-    }
-    return p;
+	char* p = MALLOC(len+1);
+	if (p) {
+		memcpy(p, s, len);
+		p[len] = 0;
+	}
+	return p;
 }
 
 char* STRNDUP(const char* s, size_t n)
 {
-    size_t len = strnlen(s, n);
-    char* p = MALLOC(len+1);
-    if (p) {
-        memcpy(p, s, len);
-        p[len] = 0;
-    }
-    return p;
+	size_t len = strnlen(s, n);
+	char* p = MALLOC(len+1);
+	if (p) {
+		memcpy(p, s, len);
+		p[len] = 0;
+	}
+	return p;
 }
 
 
@@ -88,88 +88,88 @@ char* STRNDUP(const char* s, size_t n)
  */
 int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 {
-    const unsigned char* buf = (const unsigned char*) orig;
-    unsigned i = *buf++;
-    int64_t v;
-    
-    /* 0x00000000 - 0x0000007F:
-       0xxxxxxx
-    */
-    if (0 == (i >> 7)) {
-        if (len < 1) return -1;
-        v = i;
-        return *ret = v, 1;
-    }
-    /* 0x00000080 - 0x000007FF:
-       110xxxxx 10xxxxxx
-    */
-    if (0x6 == (i >> 5)) {
-        if (len < 2) return -1;
-        v = i & 0x1f;
-        for (int j = 0; j < 1; j++) {
-            i = *buf++;
-            if (0x2 != (i >> 6)) return -1;
-            v = (v << 6) | (i & 0x3f);
-        }
-        return *ret = v, (const char*) buf - orig;
-    }
+	const unsigned char* buf = (const unsigned char*) orig;
+	unsigned i = *buf++;
+	int64_t v;
+	
+	/* 0x00000000 - 0x0000007F:
+	   0xxxxxxx
+	*/
+	if (0 == (i >> 7)) {
+		if (len < 1) return -1;
+		v = i;
+		return *ret = v, 1;
+	}
+	/* 0x00000080 - 0x000007FF:
+	   110xxxxx 10xxxxxx
+	*/
+	if (0x6 == (i >> 5)) {
+		if (len < 2) return -1;
+		v = i & 0x1f;
+		for (int j = 0; j < 1; j++) {
+			i = *buf++;
+			if (0x2 != (i >> 6)) return -1;
+			v = (v << 6) | (i & 0x3f);
+		}
+		return *ret = v, (const char*) buf - orig;
+	}
 
-    /* 0x00000800 - 0x0000FFFF:
-       1110xxxx 10xxxxxx 10xxxxxx
-    */
-    if (0xE == (i >> 4)) {
-        if (len < 3) return -1;
-        v = i & 0x0F;
-        for (int j = 0; j < 2; j++) {
-            i = *buf++;
-            if (0x2 != (i >> 6)) return -1;
-            v = (v << 6) | (i & 0x3f);
-        }
-        return *ret = v, (const char*) buf - orig;
-    }
+	/* 0x00000800 - 0x0000FFFF:
+	   1110xxxx 10xxxxxx 10xxxxxx
+	*/
+	if (0xE == (i >> 4)) {
+		if (len < 3) return -1;
+		v = i & 0x0F;
+		for (int j = 0; j < 2; j++) {
+			i = *buf++;
+			if (0x2 != (i >> 6)) return -1;
+			v = (v << 6) | (i & 0x3f);
+		}
+		return *ret = v, (const char*) buf - orig;
+	}
 
-    /* 0x00010000 - 0x001FFFFF:
-       11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    */
-    if (0x1E == (i >> 3)) {
-        if (len < 4) return -1;
-        v = i & 0x07;
-        for (int j = 0; j < 3; j++) {
-            i = *buf++;
-            if (0x2 != (i >> 6)) return -1;
-            v = (v << 6) | (i & 0x3f);
-        }
-        return *ret = v, (const char*) buf - orig;
-    }
-    
-    /* 0x00200000 - 0x03FFFFFF:
-       111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    */
-    if (0x3E == (i >> 2)) {
-        if (len < 5) return -1;
-        v = i & 0x03;
-        for (int j = 0; j < 4; j++) {
-            i = *buf++;
-            if (0x2 != (i >> 6)) return -1;
-            v = (v << 6) | (i & 0x3f);
-        }
-        return *ret = v, (const char*) buf - orig;
-    }
+	/* 0x00010000 - 0x001FFFFF:
+	   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+	*/
+	if (0x1E == (i >> 3)) {
+		if (len < 4) return -1;
+		v = i & 0x07;
+		for (int j = 0; j < 3; j++) {
+			i = *buf++;
+			if (0x2 != (i >> 6)) return -1;
+			v = (v << 6) | (i & 0x3f);
+		}
+		return *ret = v, (const char*) buf - orig;
+	}
+	
+	/* 0x00200000 - 0x03FFFFFF:
+	   111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+	*/
+	if (0x3E == (i >> 2)) {
+		if (len < 5) return -1;
+		v = i & 0x03;
+		for (int j = 0; j < 4; j++) {
+			i = *buf++;
+			if (0x2 != (i >> 6)) return -1;
+			v = (v << 6) | (i & 0x3f);
+		}
+		return *ret = v, (const char*) buf - orig;
+	}
 
-    /* 0x04000000 - 0x7FFFFFFF:
-       1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    */
-    if (0x7e == (i >> 1)) {
-        if (len < 6) return -1;
-        v = i & 0x01;
-        for (int j = 0; j < 5; j++) {
-            i = *buf++;
-            if (0x2 != (i >> 6)) return -1;
-            v = (v << 6) | (i & 0x3f);
-        }
-        return *ret = v, (const char*) buf - orig;
-    }
-    return -1;
+	/* 0x04000000 - 0x7FFFFFFF:
+	   1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+	*/
+	if (0x7e == (i >> 1)) {
+		if (len < 6) return -1;
+		v = i & 0x01;
+		for (int j = 0; j < 5; j++) {
+			i = *buf++;
+			if (0x2 != (i >> 6)) return -1;
+			v = (v << 6) | (i & 0x3f);
+		}
+		return *ret = v, (const char*) buf - orig;
+	}
+	return -1;
 }
 
 
