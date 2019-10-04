@@ -58,7 +58,7 @@ void toml_set_memutil(void* (*xxmalloc)(size_t),
 #define CALLOC(a,b)	  ppcalloc(a,b)
 #define REALLOC(a,b)  pprealloc(a,b)
 
-char* STRDUP(const char* s)
+static char* STRDUP(const char* s)
 {
 	int len = strlen(s);
 	char* p = MALLOC(len+1);
@@ -69,7 +69,7 @@ char* STRDUP(const char* s)
 	return p;
 }
 
-char* STRNDUP(const char* s, size_t n)
+static char* STRNDUP(const char* s, size_t n)
 {
 	size_t len = strnlen(s, n);
 	char* p = MALLOC(len+1);
