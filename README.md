@@ -92,10 +92,18 @@ A normal *make* suffices. Alternately, you can also simply include the
 To test against the standard test set provided by BurntSushi/toml-test:
 
 ```
-    % make
-    % cd test
-    % bash build.sh   # do this once
-    % bash run.sh      # this will run the test suite
- ```
+   % make
+   % cd test1
+   % bash build.sh   # do this once
+   % bash run.sh     # this will run the test suite
+```
 
 
+To test against the standard test set provided by iarna/toml:
+
+```
+   % make
+   % cd test2
+   % bash build.sh   # do this once
+   % bash run.sh     # this will run the test suite
+```
