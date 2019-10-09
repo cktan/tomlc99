@@ -1,5 +1,5 @@
 # tomlc99
-TOML in c99; v0.4.0 compliant.
+TOML in c99; v0.5.0 compliant.
 
 
 # Usage
