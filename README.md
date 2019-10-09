@@ -28,47 +28,33 @@ convert it to a string or integer depending on context.
 
     /* open file and parse */
     if (0 == (fp = fopen(FNAME, "r"))) {
-        perror("fopen");
-	exit(1);
+	return handle_error();
     }
     conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
     fclose(fp);
     if (0 == conf) {
-        fprintf(stderr, "ERROR: %s\n", errbuf);
-	exit(1);
+	return handle_error();
     }
 
     /* locate the [server] table */
     if (0 == (server = toml_table_in(conf, "server"))) {
-        fprintf(stderr, "ERROR: missing [server]\n");
-	toml_free(conf);
-	exit(1);
+	return handle_error();
     }
 
     /* extract host config value */
     if (0 == (raw = toml_raw_in(server, "host"))) {
-        fprintf(stderr, "ERROR: missing 'host' in [server]\n");
-	toml_free(conf);
-	exit(1);
+	return handle_error();
     }
     if (toml_rtos(raw, &host)) {
-        fprintf(stderr, "ERROR: bad value in 'host'\n");
-	toml_free(conf);
-	exit(1);
+	return handle_error();
     }
 
     /* extract port config value */
     if (0 == (raw = toml_raw_in(server, "port"))) {
-        fprintf(stderr, "ERROR: missing 'port' in [server]\n");
-	free(host);
-	toml_free(conf);
-	exit(1);
+	return handle_error();
     }
     if (toml_rtoi(raw, &port)) {
-        fprintf(stderr, "ERROR: bad value in 'port'\n");
-        free(host);			
-	toml_free(conf);
-	exit(1);
+	return handle_error();
     }
 
     /* done with conf */
