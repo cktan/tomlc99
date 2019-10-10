@@ -11,8 +11,8 @@ for i in toml-spec-tests/values/*.toml; do
     res='[OK]'
     if (../toml_json $i >& $i.json.out); then 
         jq . $i.json.out > t.json
-	mv t.json $i.json.out
-	if (diff $i.json $i.json.out >& /dev/null); then 
+	if (diff $i.json t.json >& /dev/null); then 
+	    mv t.json $i.json.failed
 	    res='[FAILED]'
 	fi
     fi
