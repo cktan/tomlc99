@@ -7,13 +7,22 @@ fi
 #  POSITIVE tests
 #
 for i in toml-spec-tests/values/*.toml; do
-    echo -n $i ' '
+    fname="$i"
+    ext="${fname##*.}"
+    fname="${fname%.*}"
+    echo -n $fname ' '
     res='[OK]'
-    if (../toml_json $i >& $i.json.out); then 
-        jq . $i.json.out > t.json
-	mv t.json $i.json.out
-	if [ -f $i.json ] && (diff $i.json $i.json.out >& /dev/null); then 
-	    res='[FAILED]'
+    if (../toml_json $fname.toml >& $fname.json.out); then 
+        jq . $fname.json.out > t.json
+	mv t.json $fname.json.out
+	if [ -f $fname.json ]; then
+	    if ! (diff $fname.json $fname.json.out >& /dev/null); then 
+	        res='[FAILED]'
+	    else
+		rm -f $fname.json.out
+	    fi
+	else
+	    res='[??]'
 	fi
     fi
     echo $res
