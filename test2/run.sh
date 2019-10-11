@@ -13,7 +13,7 @@ for i in toml-spec-tests/values/*.toml; do
     echo -n $fname ' '
     res='[OK]'
     if (../toml_json $fname.toml >& $fname.json.out); then 
-        jq . $fname.json.out > t.json
+        jq -S . $fname.json.out > t.json
 	mv t.json $fname.json.out
 	if [ -f $fname.json ]; then
 	    if ! (diff $fname.json $fname.json.out >& /dev/null); then 
