@@ -25,7 +25,7 @@ for i in toml-spec-tests/values/*.toml; do
 	    res='[??]'
 	fi
     fi
-    echo $res
+    echo ... $res
 done
 
 
@@ -34,10 +34,9 @@ done
 #
 for i in toml-spec-tests/errors/*.toml; do 
     echo -n $i ' '
+    res='[OK]'
     if (../toml_json $i >& $i.json.out); then 
-	echo '[FAILED]'
-    else
-	echo '[OK]'
+	res='[FAILED]'
     fi
-
+    echo ... $res
 done
