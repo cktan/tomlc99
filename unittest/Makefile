@@ -1,6 +1,6 @@
 CFLAGS = -g -I..
 
-TESTS = t1 
+TESTS = t1
 
 all: $(TESTS)
 

@@ -1,26 +1,26 @@
 /*
-MIT License
+  MIT License
 
-Copyright (c) 2017 CK Tan
-https://github.com/cktan/tomlc99
+  Copyright (c) 2017 CK Tan
+  https://github.com/cktan/tomlc99
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
 */
 
 #ifdef NDEBUG
@@ -121,26 +121,26 @@ static void print_array(toml_array_t* curarr)
 
     switch (toml_array_kind(curarr)) {
 
-    case 'v': 
+    case 'v':
 	for (i = 0; 0 != (raw = toml_raw_at(curarr, i)); i++) {
 	    printf("  %d: %s,\n", i, raw);
 	}
 	break;
 
-    case 'a': 
+    case 'a':
 	for (i = 0; 0 != (arr = toml_array_at(curarr, i)); i++) {
 	    printf("  %d: \n", i);
 	    print_array(arr);
 	}
 	break;
-	    
-    case 't': 
+
+    case 't':
 	for (i = 0; 0 != (tab = toml_table_at(curarr, i)); i++) {
 	    print_table(tab);
 	}
 	printf("\n");
 	break;
-	
+
     case '\0':
 	break;
 
@@ -154,7 +154,7 @@ static void print_array(toml_array_t* curarr)
 static void cat(FILE* fp)
 {
     char  errbuf[200];
-    
+
     toml_table_t* tab = toml_parse_file(fp, errbuf, sizeof(errbuf));
     if (!tab) {
 	fprintf(stderr, "ERROR: %s\n", errbuf);
@@ -178,7 +178,7 @@ int main(int argc, const char* argv[])
 	cat(stdin);
     } else {
 	for (i = 1; i < argc; i++) {
-	    
+
 	    FILE* fp = fopen(argv[i], "r");
 	    if (!fp) {
 		fprintf(stderr, "ERROR: cannot open %s: %s\n",
