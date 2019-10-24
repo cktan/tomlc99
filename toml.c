@@ -52,11 +52,18 @@ void toml_set_memutil(void* (*xxmalloc)(size_t),
 	pprealloc = xxrealloc;
 }
 
-
-#define MALLOC(a)     ppmalloc(a)
-#define FREE(a)       ppfree(a)
-#define CALLOC(a,b)   ppcalloc(a,b)
-#define REALLOC(a,b)  pprealloc(a,b)
+#ifndef MALLOC
+    #define MALLOC(a)     ppmalloc(a)
+#endif
+#ifndef FREE
+    #define FREE(a)       ppfree(a)
+#endif
+#ifndef CALLOC
+    #define CALLOC(a,b)   ppcalloc(a,b)
+#endif
+#ifndef REALLOC
+    #define REALLOC(a,b)  pprealloc(a,b)
+#endif
 
 char* STRDUP(const char* s)
 {
