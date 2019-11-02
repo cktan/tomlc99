@@ -2089,7 +2089,7 @@ int toml_rtod(const char* src, double* ret_)
 
 int toml_rtos(const char* src, char** ret)
 {
-    char dummy_errbuf[1];
+    char dummy_errbuf[1024];
 	int multiline = 0;
 	const char* sp;
 	const char* sq;
