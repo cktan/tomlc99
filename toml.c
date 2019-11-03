@@ -2089,7 +2089,6 @@ int toml_rtod(const char* src, double* ret_)
 
 int toml_rtos(const char* src, char** ret)
 {
-    char dummy_errbuf[1];
 	int multiline = 0;
 	const char* sp;
 	const char* sq;
@@ -2126,7 +2125,7 @@ int toml_rtos(const char* src, char** ret)
 		
 		*ret = norm_lit_str(sp, sq - sp,
 							multiline,
-							dummy_errbuf, sizeof(dummy_errbuf));
+							0, 0);
         return *ret ? 0 : -1;
     }
 
@@ -2151,6 +2150,6 @@ int toml_rtos(const char* src, char** ret)
 
     *ret = norm_basic_str(sp, sq - sp,
 						  multiline,
-                          dummy_errbuf, sizeof(dummy_errbuf));
+						  0, 0);
     return *ret ? 0 : -1;
 }
