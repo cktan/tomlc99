@@ -2093,61 +2093,47 @@ int toml_rtos(const char* src, char** ret)
 	const char* sp;
 	const char* sq;
 	
-	if (!src) return -1;
-	if (*src != '\'' && *src != '"') return -1;
-
 	*ret = 0;
+	if (!src) return -1;
+
+	int qchar = src[0];
 	int srclen = strlen(src);
-	if (*src == '\'') {
-		if (0 == strncmp(src, "'''", 3)) {
-			multiline = 1;
-			sp = src + 3;
-			sq = src + srclen - 3;
-			/* last 3 chars in src must be ''' */
-			if (! (sp <= sq && 0 == strcmp(sq, "'''")))
-				return -1;
-		
-			/* skip first new line right after ''' */
-			if (*sp == '\n')
-				sp++;
-			else if (sp[0] == '\r' && sp[1] == '\n')
-				sp += 2;
-
-		} else {
-			sp = src + 1;
-			sq = src + srclen - 1;
-			/* last char in src must be ' */
-			if (! (sp <= sq && *sq == '\''))
-				return -1;
-		}
-		
-		*ret = norm_lit_str(sp, sq - sp,
-							multiline,
-							0, 0);
-		return *ret ? 0 : -1;
+	if (! (qchar == '\'' || qchar == '"')) {
+		return -1;
 	}
-
-	if (0 == strncmp(src, "\"\"\"", 3)) {
+	
+	// triple quotes?
+	if (qchar == src[1] && qchar == src[2]) {
 		multiline = 1;
 		sp = src + 3;
 		sq = src + srclen - 3;
-		if (! (sp <= sq && 0 == strcmp(sq, "\"\"\"")))
+		/* last 3 chars in src must be qchar */
+		if (! (sp <= sq && sq[0] == qchar && sq[1] == qchar && sq[2] == qchar)) 
 			return -1;
-	
-		/* skip first new line right after """ */
-		if (*sp == '\n')
+		
+		/* skip new line immediate after qchar */
+		if (sp[0] == '\n')
 			sp++;
 		else if (sp[0] == '\r' && sp[1] == '\n')
 			sp += 2;
+		
 	} else {
 		sp = src + 1;
 		sq = src + srclen - 1;
-		if (! (sp <= sq && *sq == '"'))
+		/* last char in src must be qchar */
+		if (! (sp <= sq && *sq == qchar))
 			return -1;
 	}
-
-	*ret = norm_basic_str(sp, sq - sp,
-						  multiline,
-						  0, 0);
+	
+	if (qchar == '\'') {
+		*ret = norm_lit_str(sp, sq - sp,
+							multiline,
+							0, 0);
+	} else {
+		*ret = norm_basic_str(sp, sq - sp,
+							  multiline,
+							  0, 0);
+	}
+	
 	return *ret ? 0 : -1;
 }
