@@ -2119,8 +2119,6 @@ int toml_rtos(const char* src, char** ret)
             /* last char in src must be ' */
             if (! (sp <= sq && *sq == '\''))
                 return -1;
-            /* copy from sp to p */
-            *ret = STRNDUP(sp, sq - sp);
         }
 		
 		*ret = norm_lit_str(sp, sq - sp,
