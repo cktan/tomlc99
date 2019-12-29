@@ -43,16 +43,16 @@ typedef struct toml_array_t toml_array_t;
  * Caller must toml_free(the-return-value) after use.
  */
 TOML_EXTERN toml_table_t* toml_parse_file(FILE* fp, 
-                                          char* errbuf,
-                                          int errbufsz);
+										  char* errbuf,
+										  int errbufsz);
 
 /* Parse a string containing the full config. 
  * Return a table on success, or 0 otherwise.
  * Caller must toml_free(the-return-value) after use.
  */
 TOML_EXTERN toml_table_t* toml_parse(char* conf, /* NUL terminated, please. */
-                                     char* errbuf,
-                                     int errbufsz);
+									 char* errbuf,
+									 int errbufsz);
 
 /* Free the table returned by toml_parse() or toml_parse_file(). */
 TOML_EXTERN void toml_free(toml_table_t* tab);
@@ -121,14 +121,14 @@ TOML_EXTERN int toml_rtod_ex(const char* s, double* ret, char* buf, int buflen);
  */
 typedef struct toml_timestamp_t toml_timestamp_t;
 struct toml_timestamp_t {
-    struct { /* internal. do not use. */
-        int year, month, day;
-        int hour, minute, second, millisec;
-        char z[10];
-    } __buffer;
-    int *year, *month, *day;
-    int *hour, *minute, *second, *millisec;
-    char* z;
+	struct { /* internal. do not use. */
+		int year, month, day;
+		int hour, minute, second, millisec;
+		char z[10];
+	} __buffer;
+	int *year, *month, *day;
+	int *hour, *minute, *second, *millisec;
+	char* z;
 };
 
 /* Raw to Timestamp. Return 0 on success, -1 otherwise. */
@@ -138,7 +138,7 @@ TOML_EXTERN int toml_rtots(const char* s, toml_timestamp_t* ret);
 TOML_EXTERN int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret);
 TOML_EXTERN int toml_ucs_to_utf8(int64_t code, char buf[6]);
 TOML_EXTERN void toml_set_memutil(void* (*xxmalloc)(size_t),
-								  void  (*xxfree)(void*),
+								  void	(*xxfree)(void*),
 								  void* (*xxcalloc)(size_t, size_t),
 								  void* (*xxrealloc)(void*, size_t));
 
