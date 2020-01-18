@@ -390,10 +390,10 @@ static int e_bad_key_error(context_t* ctx, int lineno)
   }
 */
 
-static int e_key_exists_error(context_t* ctx, int lineno, const char* key)
+static int e_key_exists_error(context_t* ctx, int lineno)
 {
 	snprintf(ctx->errbuf, ctx->errbufsz,
-			 "line %d: key %s exists", lineno, key);
+			 "line %d: key exists", lineno);
 	longjmp(ctx->jmp, 1);
 	return -1;
 }
@@ -691,7 +691,7 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
 	toml_keyval_t* dest = 0;
 	if (key_kind(tab, newkey)) {
 		xfree(newkey);
-		e_key_exists_error(ctx, keytok.lineno, newkey);
+		e_key_exists_error(ctx, keytok.lineno);
 		return 0;		/* not reached */
 	}
 
@@ -738,7 +738,7 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
 			dest->implicit = 0;
 			return dest;
 		}
-		e_key_exists_error(ctx, keytok.lineno, newkey);
+		e_key_exists_error(ctx, keytok.lineno);
 		return 0;		/* not reached */
 	}
 
@@ -780,7 +780,7 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
 	/* if key exists: error out */
 	if (key_kind(tab, newkey)) {
 		xfree(newkey);		 /* don't need this anymore */
-		e_key_exists_error(ctx, keytok.lineno, newkey);
+		e_key_exists_error(ctx, keytok.lineno);
 		return 0;		/* not reached */
 	}
 
@@ -1186,7 +1186,7 @@ static void walk_tabpath(context_t* ctx)
 			break;
 
 		case 'v':
-			e_key_exists_error(ctx, ctx->tpath.tok[i].lineno, key);
+			e_key_exists_error(ctx, ctx->tpath.tok[i].lineno);
 			return;		/* not reached */
 
 		default:
