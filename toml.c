@@ -850,7 +850,15 @@ static toml_table_t* create_table_in_array(context_t* ctx,
 }
 
 
-#define SKIP_NEWLINES(ctx, isdotspecial)  while (ctx->tok.tok == NEWLINE) next_token(ctx, isdotspecial)
+static void skip_newlines(context_t* ctx, int isdotspecial)
+{
+	while (ctx->tok.tok == NEWLINE) {
+		next_token(ctx, isdotspecial);
+		if (ctx->tok.eof) break;
+	}
+}
+
+
 #define EAT_TOKEN(ctx, typ, isdotspecial)								\
 	if ((ctx)->tok.tok != typ) e_internal_error(ctx, FLINE); else next_token(ctx, isdotspecial)
 
@@ -923,7 +931,7 @@ static void parse_array(context_t* ctx, toml_array_t* arr)
 	EAT_TOKEN(ctx, LBRACKET, 0);
 
 	for (;;) {
-		SKIP_NEWLINES(ctx, 0);
+		skip_newlines(ctx, 0);
 	
 		/* until ] */
 		if (ctx->tok.tok == RBRACKET) break;
@@ -1002,7 +1010,7 @@ static void parse_array(context_t* ctx, toml_array_t* arr)
 			return;		/* not reached */
 		}
 
-		SKIP_NEWLINES(ctx, 0);
+		skip_newlines(ctx, 0);
 
 		/* on comma, continue to scan for next element */
 		if (ctx->tok.tok == COMMA) {
@@ -1013,7 +1021,7 @@ static void parse_array(context_t* ctx, toml_array_t* arr)
 	}
 
 	if (ctx->tok.tok != RBRACKET) {
-		e_syntax_error(ctx, ctx->tok.lineno, "syntax error");
+		e_syntax_error(ctx, ctx->tok.lineno, "expect a right bracket");
 		return;			/* not reached */
 	}
 
