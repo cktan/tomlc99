@@ -73,6 +73,20 @@ convert it to a string or integer depending on context.
 A normal *make* suffices. Alternately, you can also simply include the
 `toml.c` and `toml.h` files in your project.
 
+If using the Meson build system, you can also include tomlc99 as a subproject,
+by adding the following to your `meson.build`:
+
+```
+    toml_dep = dependency('toml', fallback: ['tomlc99', 'toml_dep'])
+```
+
+And then add a git submodule in your `subprojects` directory:
+
+```
+   % cd subprojects
+   % git submodule add https://github.com/cktan/tomlc99.git
+```
+
 # Testing
 
 To test against the standard test set provided by BurntSushi/toml-test:
