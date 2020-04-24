@@ -77,7 +77,7 @@ If using the Meson build system, you can also include tomlc99 as a subproject,
 by adding the following to your `meson.build`:
 
 ```
-    toml_dep = dependency('toml', fallback: ['tomlc99', 'toml_dep'])
+    toml_dep = dependency('tomlc99', fallback: ['tomlc99', 'toml_dep'])
 ```
 
 And then add a git submodule in your `subprojects` directory:
