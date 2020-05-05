@@ -70,8 +70,21 @@ convert it to a string or integer depending on context.
 
 # Building
 
-A normal *make* suffices. Alternately, you can also simply include the
+A normal *make* suffices. Alternatively, you can also simply include the
 `toml.c` and `toml.h` files in your project.
+
+## CMake
+
+To build using CMake:
+
+```bash
+mkdir build 
+cd build
+cmake .. && make
+sudo make install
+```
+
+If you want to use this library inside your own CMake project, just **`add_subdirectory(path/to/this/repo tomlc99)`** and **`target_link_libraries(your_target PUBLIC tomlc99)`**.
 
 # Testing
 
