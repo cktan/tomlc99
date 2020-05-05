@@ -2,9 +2,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
-#include "../toml.h"
-
-
+#include "tomlc99/toml.h"
 
 int main(int argc, const char* argv[])
 {

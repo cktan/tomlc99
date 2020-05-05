@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2017 CK Tan, 2020 Raphael Beck
+#  Copyright (c) 2020 CK Tan, Raphael Beck
 #  https://github.com/cktan/tomlc99
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ project(tomlc99 C)
 set(CMAKE_C_STANDARD 99)
 
 option(TOMLC99_BUILD_PROGRAMS "Build tomlc99 programs." ON)
+option(TOMLC99_BUILD_TESTS "Build tomlc99 unit tests." OFF)
 
 set(${PROJECT_NAME}_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/include/tomlc99/toml.h
@@ -50,5 +51,15 @@ if (TOMLC99_BUILD_PROGRAMS)
             ${CMAKE_CURRENT_LIST_DIR}/src/toml_json.c)
 
     target_link_libraries(toml_json PUBLIC ${PROJECT_NAME})
+
+endif ()
+
+if (TOMLC99_BUILD_TESTS)
+
+    add_executable(t1
+            ${${PROJECT_NAME}_SOURCES}
+            ${CMAKE_CURRENT_LIST_DIR}/unittest/t1.c)
+
+    target_link_libraries(t1 PUBLIC ${PROJECT_NAME})
 
 endif ()

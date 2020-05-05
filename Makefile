@@ -1,4 +1,4 @@
-CFILES = toml.c
+CFILES = src/toml.c
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
 # to compile for debug: make DEBUG=1
@@ -23,15 +23,15 @@ libtoml.a: toml.o
 libtoml.so: toml.o
 	$(CC) -shared -o $@ $^
 
-toml_json: toml_json.c $(LIB)
+toml_json: src/toml_json.c $(LIB)
 
-toml_cat: toml_cat.c $(LIB)
+toml_cat: src/toml_cat.c $(LIB)
 
 prefix ?= /usr/local
 
 install: all
 	install -d ${prefix}/include ${prefix}/lib
-	install toml.h ${prefix}/include
+	install include/tomlc99/toml.h ${prefix}/include
 	install $(LIB) ${prefix}/lib
 	install $(LIB_SHARED) ${prefix}/lib
 
