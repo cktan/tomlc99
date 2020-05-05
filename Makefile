@@ -30,10 +30,10 @@ toml_cat: src/toml_cat.c $(LIB)
 prefix ?= /usr/local
 
 install: all
-	install -d ${prefix}/include ${prefix}/lib
-	install include/tomlc99/toml.h ${prefix}/include
-	install $(LIB) ${prefix}/lib
-	install $(LIB_SHARED) ${prefix}/lib
+	install -d ${prefix}/include/tomlc99 ${prefix}/lib/tomlc99
+	install include/tomlc99/toml.h ${prefix}/include/tomlc99
+	install $(LIB) ${prefix}/lib/tomlc99
+	install $(LIB_SHARED) ${prefix}/lib/tomlc99
 
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
