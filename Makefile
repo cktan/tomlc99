@@ -6,8 +6,9 @@ INCLUDE_DIR = include
 CFILES = src/toml.c
 CFLAGS = -std=c99 -Wall -Wextra -fpic -I$(INCLUDE_DIR)
 
-# to compile for debug:		make DEBUG=1
-# to compile for no debug:	make
+# To compile for debug:     make DEBUG=1
+# To compile for no debug:  make
+
 ifdef DEBUG
     CFLAGS += -O0 -g
 else
