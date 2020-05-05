@@ -35,3 +35,10 @@ toml_json
 # Debug files
 *.dSYM/
 *.su
+
+# Unnecessary OS, IDE and CMake files
+**/.idea
+**/.directory
+**/.DS_Store
+**/[Tt]humbs.db
+**/[Cc]make-build-*

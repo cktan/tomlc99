@@ -33,7 +33,7 @@ SOFTWARE.
 #include <errno.h>
 #include <stdint.h>
 #include <assert.h>
-#include "toml.h"
+#include "tomlc99/toml.h"
 
 typedef struct node_t node_t;
 struct node_t {
