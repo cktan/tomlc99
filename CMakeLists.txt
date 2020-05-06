@@ -27,6 +27,10 @@ project(tomlc99 C)
 
 set(CMAKE_C_STANDARD 99)
 
+if (WIN32 AND BUILD_SHARED_LIBS)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif ()
+
 option(TOMLC99_BUILD_PROGRAMS "Build tomlc99 programs." ON)
 option(TOMLC99_BUILD_TESTS "Build tomlc99 unit tests." OFF)
 
