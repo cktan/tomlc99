@@ -2,7 +2,7 @@
 
   MIT License
 
-  Copyright (c) 2017 - 2019 CK Tan 
+  Copyright (c) 2017 - 2019 CK Tan, 2020 Raphael Beck
   https://github.com/cktan/tomlc99
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -2023,6 +2023,72 @@ int toml_rtoi(const char* src, int64_t* ret_)
 	return (errno || *endp) ? -1 : 0;
 }
 
+/* Raw to unsigned integer */
+int toml_rtou(const char* src, uint64_t* ret_)
+{
+    if (!src) return -1;
+
+    char buf[100];
+    char* p = buf;
+    char* q = p + sizeof(buf);
+    const char* s = src;
+    int base = 0;
+    uint64_t dummy;
+    uint64_t* ret = ret_ ? ret_ : &dummy;
+
+
+    /* disallow negative numbers - */
+    if(s[0] == '-')
+      return -1;
+
+    /* allow first char to be + */
+    if (s[0] == '+')
+      *p++ = *s++;
+
+    /* disallow +_100 */
+    if (s[0] == '_')
+      return -1;
+
+    /* if 0 ... */
+    if ('0' == s[0]) {
+      switch (s[1]) {
+      case 'x': base = 16; s += 2; break;
+      case 'o': base = 8; s += 2; break;
+      case 'b': base = 2; s += 2; break;
+      case '\0': return *ret = 0, 0;
+      default:
+        /* ensure no other digits after it */
+        if (s[1]) return -1;
+      }
+    }
+
+    /* just strip underscores and pass to strtoull */
+    while (*s && p < q) {
+      int ch = *s++;
+      switch (ch) {
+      case '_':
+        // disallow '__'
+        if (s[0] == '_') return -1;
+        continue;			/* skip _ */
+      default:
+        break;
+      }
+      *p++ = ch;
+    }
+    if (*s || p == q) return -1;
+
+    /* last char cannot be '_' */
+    if (s[-1] == '_') return -1;
+
+    /* cap with NUL */
+    *p = 0;
+
+    /* Run strtoull on buf to get the integer */
+    char* endp;
+    errno = 0;
+    *ret = strtoull(buf, &endp, base);
+    return (errno || *endp) ? -1 : 0;
+}
 
 int toml_rtod_ex(const char* src, double* ret_, char* buf, int buflen)
 {

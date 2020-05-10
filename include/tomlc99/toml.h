@@ -1,7 +1,7 @@
 /*
   MIT License
   
-  Copyright (c) 2017 - 2019 CK Tan
+  Copyright (c) 2017 - 2019 CK Tan, 2020 Raphael Beck
   https://github.com/cktan/tomlc99
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -109,6 +109,9 @@ TOML_EXTERN int toml_rtob(const char* s, int* ret);
 
 /* Raw to Integer. Return 0 on success, -1 otherwise. */
 TOML_EXTERN int toml_rtoi(const char* s, int64_t* ret);
+
+/* Raw to Unsigned Integer. Return 0 on success, -1 otherwise. */
+TOML_EXTERN int toml_rtou(const char* s, uint64_t* ret);
 
 /* Raw to Double. Return 0 on success, -1 otherwise. */
 TOML_EXTERN int toml_rtod(const char* s, double* ret);
