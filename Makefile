@@ -1,6 +1,12 @@
+HFILES = toml.h
 CFILES = toml.c
+OBJ = $(CFILES:.c=.o) 
+EXEC = toml_json toml_cat
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
+LIB = libtoml.a
+LIB_SHARED = libtoml.so
+
 # to compile for debug: make DEBUG=1
 # to compile for no debug: make
 ifdef DEBUG
@@ -9,13 +15,10 @@ else
     CFLAGS += -O2 -DNDEBUG
 endif
 
-EXEC = toml_json toml_cat
-
-LIB = libtoml.a
-LIB_SHARED = libtoml.so
 
 all: $(LIB) $(LIB_SHARED) $(EXEC)
 
+*.o: $(HFILES)
 
 libtoml.a: toml.o
 	ar -rcs $@ $^
