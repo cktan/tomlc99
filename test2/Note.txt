@@ -1,0 +1,5 @@
+Note that these tests are expected to fail as we do not validate Unicode strings.
+
+% bash run.sh | grep FAIL
+toml-spec-tests/errors/string-basic-multiline-out-of-range-unicode-escape-2.toml  ... [FAILED]
+toml-spec-tests/errors/string-basic-out-of-range-unicode-escape-2.toml  ... [FAILED]
