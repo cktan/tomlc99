@@ -35,7 +35,7 @@ done
 for i in toml-spec-tests/errors/*.toml; do 
     echo -n $i ' '
     res='[OK]'
-    if (../toml_json $i >& $i.json.out); then 
+    if (../build/toml_json $i >& $i.json.out); then 
 	res='[FAILED]'
     fi
     echo ... $res
