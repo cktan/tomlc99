@@ -21,7 +21,9 @@ matrix:
       arch: amd64
       install:
         - choco install golang -y
-        - export go=/c/Go/bin/go
+        - export go=/C/Go/bin/go
+        - echo $go
+        - go version
       scripts:
         - mkdir build
         - cd build
@@ -39,7 +41,9 @@ matrix:
 
 scripts: |-
   cmake .
-  make 
+  make
+  ls -la
+  ls -la build/
   cd test1/
   bash build.sh
   bash run.sh
