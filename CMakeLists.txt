@@ -35,8 +35,8 @@ option(TOMLC89_BUILD_PROGRAMS "Build tomlc89 programs." ON)
 option(TOMLC89_BUILD_TESTS "Build tomlc89 unit tests." OFF)
 
 set(${PROJECT_NAME}_SOURCES
-        ${CMAKE_CURRENT_LIST_DIR}/toml.h
-        ${CMAKE_CURRENT_LIST_DIR}/toml.c)
+        ${CMAKE_CURRENT_LIST_DIR}/include/toml.h
+        ${CMAKE_CURRENT_LIST_DIR}/src/toml.c)
 
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
 
@@ -46,13 +46,13 @@ if (TOMLC89_BUILD_PROGRAMS)
 
     add_executable(toml_cat
             ${${PROJECT_NAME}_SOURCES}
-            ${CMAKE_CURRENT_LIST_DIR}/toml_cat.c)
+            ${CMAKE_CURRENT_LIST_DIR}/src/toml_cat.c)
 
     target_link_libraries(toml_cat PUBLIC ${PROJECT_NAME})
 
     add_executable(toml_json
             ${${PROJECT_NAME}_SOURCES}
-            ${CMAKE_CURRENT_LIST_DIR}/toml_json.c)
+            ${CMAKE_CURRENT_LIST_DIR}/src/toml_json.c)
 
     target_link_libraries(toml_json PUBLIC ${PROJECT_NAME})
 
