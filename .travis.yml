@@ -23,10 +23,15 @@ matrix:
         - choco install golang -y
       scripts:
         - export go=/c/Go/bin/go.exe
+        - echo $go
+        - go
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ..
+        - ls -la 
         - /c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/MSBuild/15.0/Bin/MSBuild.exe "ALL_BUILD.vcxproj" //p:Platform=x64 //p:Configuration=Release
+        - ls -la
+        - ls -la Release/
         - cd ../test1/
         - chmod +x build.sh
         - ./build.sh
