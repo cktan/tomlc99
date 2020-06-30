@@ -91,6 +91,7 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	const unsigned char* buf = (const unsigned char*) orig;
 	unsigned i = *buf++;
 	int64_t v;
+	int j1, j2, j3, j4, j5; /* Counters j1-j5 */
 	
 	/* 0x00000000 - 0x0000007F:
 	   0xxxxxxx
@@ -106,12 +107,12 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (0x6 == (i >> 5)) {
 		if (len < 2) return -1;
 		v = i & 0x1f;
-		for (int j = 0; j < 1; j++) {
+		for (j1 = 0; j1 < 1; j1++){
 			i = *buf++;
 			if (0x2 != (i >> 6)) return -1;
 			v = (v << 6) | (i & 0x3f);
-		}
 		return *ret = v, (const char*) buf - orig;
+		}
 	}
 
 	/* 0x00000800 - 0x0000FFFF:
@@ -120,12 +121,12 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (0xE == (i >> 4)) {
 		if (len < 3) return -1;
 		v = i & 0x0F;
-		for (int j = 0; j < 2; j++) {
+		for (j2 = 0; j2 < 2; j2++){
 			i = *buf++;
 			if (0x2 != (i >> 6)) return -1;
 			v = (v << 6) | (i & 0x3f);
-		}
 		return *ret = v, (const char*) buf - orig;
+		}
 	}
 
 	/* 0x00010000 - 0x001FFFFF:
@@ -134,12 +135,12 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (0x1E == (i >> 3)) {
 		if (len < 4) return -1;
 		v = i & 0x07;
-		for (int j = 0; j < 3; j++) {
+		for (j3 = 0; j3 < 3; j3++){
 			i = *buf++;
 			if (0x2 != (i >> 6)) return -1;
 			v = (v << 6) | (i & 0x3f);
-		}
 		return *ret = v, (const char*) buf - orig;
+		}
 	}
 	
 	/* 0x00200000 - 0x03FFFFFF:
@@ -148,7 +149,7 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (0x3E == (i >> 2)) {
 		if (len < 5) return -1;
 		v = i & 0x03;
-		for (int j = 0; j < 4; j++) {
+		for (j4 = 0; j4 < 4; j4++){
 			i = *buf++;
 			if (0x2 != (i >> 6)) return -1;
 			v = (v << 6) | (i & 0x3f);
@@ -162,12 +163,12 @@ int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret)
 	if (0x7e == (i >> 1)) {
 		if (len < 6) return -1;
 		v = i & 0x01;
-		for (int j = 0; j < 5; j++) {
+		for (j5 = 0; j5 < 5; j5++){ 
 			i = *buf++;
 			if (0x2 != (i >> 6)) return -1;
 			v = (v << 6) | (i & 0x3f);
-		}
 		return *ret = v, (const char*) buf - orig;
+		}
 	}
 	return -1;
 }
