@@ -491,7 +491,7 @@ static char* norm_basic_str(const char* src, int srclen,
 				}
 			}
 			
-			// a plain copy suffice
+			/* a plain copy suffice */
 			dst[off++] = ch;
 			continue;
 		}
@@ -506,7 +506,7 @@ static char* norm_basic_str(const char* src, int srclen,
 		/* for multi-line, we want to kill line-ending-backslash ... */
 		if (multiline) {
 
-			// if there is only whitespace after the backslash ...
+			/* if there is only whitespace after the backslash ... */
 			if (sp[strspn(sp, " \t\r")] == '\n') {
 				/* skip all the following whitespaces */
 				sp += strspn(sp, " \t\r\n");
@@ -564,7 +564,7 @@ static char* norm_basic_str(const char* src, int srclen,
 		dst[off++] = ch;
 	}
 
-	// Cap with NUL and return it.
+	/* Cap with NUL and return it. */
 	dst[off++] = 0; 
 	return dst;
 }
@@ -1341,36 +1341,36 @@ toml_table_t* toml_parse(char* conf,
 {
 	context_t ctx;
 
-	// clear errbuf 
+	/* clear errbuf */
 	if (errbufsz <= 0) errbufsz = 0;
 	if (errbufsz > 0)  errbuf[0] = 0;
 
-	// init context 
+	/* init context */
 	memset(&ctx, 0, sizeof(ctx));
 	ctx.start = conf;
 	ctx.stop = ctx.start + strlen(conf);
 	ctx.errbuf = errbuf;
 	ctx.errbufsz = errbufsz;
 
-	// start with an artificial newline of length 0
+	/* start with an artificial newline of length 0 */
 	ctx.tok.tok = NEWLINE; 
 	ctx.tok.lineno = 1;
 	ctx.tok.ptr = conf;
 	ctx.tok.len = 0;
 
-	// make a root table
+	/* make a root table */
 	if (0 == (ctx.root = CALLOC(1, sizeof(*ctx.root)))) {
 		/* do not call outofmemory() here... setjmp not done yet */
 		snprintf(ctx.errbuf, ctx.errbufsz, "ERROR: out of memory (%s)", FLINE);
 		return 0;
 	}
 
-	// set root as default table
+	/* set root as default table */
 	ctx.curtab = ctx.root;
 
 	if (0 != setjmp(ctx.jmp)) {
-		// Got here from a long_jmp. Something bad has happened.
-		// Free resources and return error.
+		/* Got here from a long_jmp. Something bad has happened.
+		   Free resources and return error. */
 		for (int i = 0; i < ctx.tpath.top; i++) xfree(ctx.tpath.key[i]);
 		toml_free(ctx.root);
 		return 0;
@@ -1663,11 +1663,11 @@ static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspe
 
 	/* check for timestamp without quotes */
 	if (0 == scan_date(p, 0, 0, 0) || 0 == scan_time(p, 0, 0, 0)) {
-		// forward thru the timestamp
+		/* forward thru the timestamp */
 		for ( ; strchr("0123456789.:+-T Z", toupper(*p)); p++);
-		// squeeze out any spaces at end of string
+		/* squeeze out any spaces at end of string */
 		for ( ; p[-1] == ' '; p--);
-		// tokenize
+		/* tokenize */
 		return ret_token(ctx, STRING, lineno, orig, p - orig);
 	}
 
@@ -1874,7 +1874,7 @@ int toml_rtots(const char* src_, toml_timestamp_t* ret)
 		
 		p += 10;
 		if (*p) {
-			// parse the T or space separator
+			/* parse the T or space separator */
 			if (*p != 'T' && *p != ' ') return -1;
 			must_parse_time = 1;
 			p++;
@@ -2001,7 +2001,7 @@ int toml_rtoi(const char* src, int64_t* ret_)
 		int ch = *s++;
 		switch (ch) {
 		case '_':
-			// disallow '__'
+			/* disallow '__' */
 			if (s[0] == '_') return -1; 
 			continue;			/* skip _ */
 		default:
@@ -2061,7 +2061,7 @@ int toml_rtod_ex(const char* src, double* ret_, char* buf, int buflen)
 			if (s[0] == '_') return -1;
 			break;
 		case '_':
-			// disallow '__'
+			/* disallow '__' */
 			if (s[0] == '_') return -1; 
 			continue;			/* skip _ */
 		default:
@@ -2093,9 +2093,6 @@ int toml_rtod(const char* src, double* ret_)
 	return toml_rtod_ex(src, ret_, buf, sizeof(buf));
 }
 
-
-
-
 int toml_rtos(const char* src, char** ret)
 {
 	int multiline = 0;
@@ -2111,7 +2108,7 @@ int toml_rtos(const char* src, char** ret)
 		return -1;
 	}
 	
-	// triple quotes?
+	/* triple quotes? */
 	if (qchar == src[1] && qchar == src[2]) {
 		multiline = 1;
 		sp = src + 3;
