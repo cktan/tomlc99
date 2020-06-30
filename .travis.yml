@@ -40,7 +40,9 @@ matrix:
         - bash run.sh
 
 scripts: |-
-  cmake .
+  mkdir build
+  cd build
+  cmake ..
   make
   ls -la
   ls -la build/
