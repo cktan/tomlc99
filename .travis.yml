@@ -22,7 +22,7 @@ matrix:
       install:
         - choco install golang -y
       scripts:
-        - export go=/c/Go/bin/go
+        - export go=/c/Go/bin/go.exe
         - ls -la
         - ls -ls /c/
         - ls -la /c/Go
