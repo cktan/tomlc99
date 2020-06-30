@@ -299,7 +299,7 @@ struct toml_table_t {
 };
 
 
-static inline void xfree(const void* x) { if (x) FREE((void*)x); }
+static void xfree(const void* x) { if (x) FREE((void*)x); }
 
 
 enum tokentype_t {
@@ -437,7 +437,7 @@ static char* norm_lit_str(const char* src, int srclen,
 			}
 		}
 			
-		// a plain copy suffice
+		/* a plain copy suffice */
 		dst[off++] = ch;
 	}
 
