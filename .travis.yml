@@ -20,6 +20,7 @@ matrix:
       os: windows
       arch: amd64
       install:
+        - choco install golang -y
         - choco install make -y
       scripts:
         - make 

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tonymmm1/tomlc89.svg?branch=master)](https://travis-ci.org/tonymmm1/tomlc89)
+
 # tomlc89
 Translated C99 to C89 for backwards compatibility. 
 
