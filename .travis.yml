@@ -21,8 +21,12 @@ matrix:
       arch: amd64
       install:
         - choco install golang -y
-        - export go=/C/Go/bin/go
       scripts:
+        - export go=/c/Go/bin/go
+        - ls -la
+        - ls -ls /c/
+        - ls -la /c/Go
+        - ls -la /c/Go/bin
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ..
