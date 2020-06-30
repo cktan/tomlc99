@@ -21,7 +21,6 @@ matrix:
       arch: amd64
       install:
         - choco install golang -y
-        - choco install make -y
         - export go=/c/Go/bin/go
       scripts:
         - mkdir build
