@@ -19,25 +19,17 @@ matrix:
     - name: "Windows build Visual Studio"
       os: windows
       arch: amd64
-      env: 
-        - go=/c/Go/bin/go.exe
       install:
         - choco install golang -y
       scripts:
-        - echo $go
-        - go
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ..
-        - ls -la 
-        - /c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/MSBuild/15.0/Bin/MSBuild.exe "ALL_BUILD.vcxproj" //p:Platform=x64 //p:Configuration=Release
-        - ls -la
+        - /c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/MSBuild/15.0/Bin/MSBuild.exe "tomlc89.sln" //p:Platform=x64 //p:Configuration=Release 
         - ls -la Release/
         - cd ../test1/
-        - chmod +x build.sh
-        - ./build.sh
-        - chmod +x run.sh
-        - ./run.sh
+        - bash build.sh
+        - bash run.sh
         - cd $TRAVIS_BUILD_DIR
         - cd test2/ 
         - bash build.sh
