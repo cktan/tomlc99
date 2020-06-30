@@ -34,7 +34,8 @@ matrix:
         - bash run.sh
 
 scripts: |-
-  make
+  cmake .
+  make 
   cd test1/
   bash build.sh
   bash run.sh
