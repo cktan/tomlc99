@@ -3,7 +3,7 @@ Translated C99 to C89 for backwards compatibility.
 
 Forked from [tomlc99](https://github.com/cktan/tomlc99)
 
-TOML in c98; v0.5.0 compliant.
+TOML in c89; v0.5.0 compliant.
 
 # Usage
 
