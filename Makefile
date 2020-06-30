@@ -3,7 +3,7 @@ CFILES = toml.c
 OBJ = $(CFILES:.c=.o) 
 EXEC = toml_json toml_cat
 
-CFLAGS = -std=c99 -Wall -Wextra -fpic
+CFLAGS = -std=c89 -Wall -Wextra -fpic
 LIB = libtoml.a
 LIB_SHARED = libtoml.so
 
