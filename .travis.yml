@@ -22,8 +22,6 @@ matrix:
       install:
         - choco install golang -y
         - export go=/C/Go/bin/go
-        - echo $go
-        - go version
       scripts:
         - mkdir build
         - cd build
@@ -44,8 +42,6 @@ scripts: |-
   cd build
   cmake ..
   make
-  ls -la
-  ls -la build/
   cd test1/
   bash build.sh
   bash run.sh
