@@ -19,10 +19,11 @@ matrix:
     - name: "Windows build Visual Studio"
       os: windows
       arch: amd64
+      env: 
+        - go=/c/Go/bin/go.exe
       install:
         - choco install golang -y
       scripts:
-        - export go=/c/Go/bin/go.exe
         - echo $go
         - go
         - mkdir build
