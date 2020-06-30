@@ -75,7 +75,12 @@ convert it to a string or integer depending on context.
 
 # Building
 
-A normal *make* suffices. Alternately, you can also simply include the
+```
+mkdir build
+cmake ..
+make
+```
+
 `toml.c` and `toml.h` files in your project.
 
 # Testing
