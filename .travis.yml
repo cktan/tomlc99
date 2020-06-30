@@ -46,7 +46,7 @@ scripts: |-
   cd build
   cmake ..
   make
-  cd test1/
+  cd ../test1/
   bash build.sh
   bash run.sh
   cd $TRAVIS_BUILD_DIR
