@@ -1,4 +1,4 @@
-# tomlc98
+# tomlc89
 Translated C99 to C89 for backwards compatibility. 
 
 Forked from [tomlc99](https://github.com/cktan/tomlc99)
