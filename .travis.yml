@@ -26,7 +26,6 @@ matrix:
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ..
         - /c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/MSBuild/15.0/Bin/MSBuild.exe "tomlc89.sln" //p:Platform=x64 //p:Configuration=Release 
-        - ls -la Release/
         - cd ../test1/
         - bash build.sh
         - bash run.sh
