@@ -516,12 +516,13 @@ static char* norm_basic_str(const char* src, int srclen,
 
 		/* get the escaped char */
 		ch = *sp++;
+		int i1; /* Counting variable */
 		switch (ch) {
 		case 'u': case 'U':
 			{
 				int64_t ucs = 0;
 				int nhex = (ch == 'u' ? 4 : 8);
-				for (int i = 0; i < nhex; i++) {
+				for (i1 = 0; i1 < nhex; i1++) {
 					if (sp >= sq) {
 						snprintf(errbuf, errbufsz, "\\%c expects %d hex chars", ch, nhex);
 						xfree(dst);
@@ -1169,9 +1170,9 @@ static void walk_tabpath(context_t* ctx)
 {
 	/* start from root */
 	toml_table_t* curtab = ctx->root;
-	
-	for (int i = 0; i < ctx->tpath.top; i++) {
-		const char* key = ctx->tpath.key[i];
+	int i2; /* Counting variable */
+	for (i2 = 0; i2 < ctx->tpath.top; i2++) {
+		const char* key = ctx->tpath.key[i2];
 
 		toml_keyval_t* nextval = 0;
 		toml_array_t* nextarr = 0;
@@ -1195,7 +1196,7 @@ static void walk_tabpath(context_t* ctx)
 			break;
 
 		case 'v':
-			e_key_exists_error(ctx, ctx->tpath.tok[i].lineno);
+			e_key_exists_error(ctx, ctx->tpath.tok[i2].lineno);
 			return;		/* not reached */
 
 		default:
@@ -1367,17 +1368,17 @@ toml_table_t* toml_parse(char* conf,
 
 	/* set root as default table */
 	ctx.curtab = ctx.root;
-
+	int i3; /* Counting variable */
 	if (0 != setjmp(ctx.jmp)) {
 		/* Got here from a long_jmp. Something bad has happened.
 		   Free resources and return error. */
-		for (int i = 0; i < ctx.tpath.top; i++) xfree(ctx.tpath.key[i]);
+		for (i3 = 0; i3 < ctx.tpath.top; i3++) xfree(ctx.tpath.key[i3]);
 		toml_free(ctx.root);
 		return 0;
 	}
-
 	/* Scan forward until EOF */
-	for (token_t tok = ctx.tok; ! tok.eof ; tok = ctx.tok) {
+	token_t tok;
+	for (tok = ctx.tok; ! tok.eof ; tok = ctx.tok) {
 		switch (tok.tok) {
 		
 		case NEWLINE:
@@ -1405,7 +1406,8 @@ toml_table_t* toml_parse(char* conf,
 	}
 
 	/* success */
-	for (int i = 0; i < ctx.tpath.top; i++) xfree(ctx.tpath.key[i]);
+	int i4; /* Count variable */
+	for (i4 = 0; i4 < ctx.tpath.top; i4++) xfree(ctx.tpath.key[i4]);
 	return ctx.root;
 }
 
@@ -1471,22 +1473,23 @@ static void xfree_tab(toml_table_t* p);
 
 static void xfree_arr(toml_array_t* p)
 {
+	int i5,i6,i7;	/* Count variables */
 	if (!p) return;
 
 	xfree(p->key);
 	switch (p->kind) {
 	case 'v':
-		for (int i = 0; i < p->nelem; i++) xfree(p->u.val[i]);
+		for (i5 = 0; i5 < p->nelem; i5++) xfree(p->u.val[i5]);
 		xfree(p->u.val);
 		break;
 
 	case 'a':
-		for (int i = 0; i < p->nelem; i++) xfree_arr(p->u.arr[i]);
+		for (i6 = 0; i6 < p->nelem; i6++) xfree_arr(p->u.arr[i6]);
 		xfree(p->u.arr);
 		break;
 
 	case 't':
-		for (int i = 0; i < p->nelem; i++) xfree_tab(p->u.tab[i]);
+		for (i7 = 0; i7 < p->nelem; i7++) xfree_tab(p->u.tab[i7]);
 		xfree(p->u.tab);
 		break;
 	}
