@@ -22,7 +22,7 @@ matrix:
       install:
         - choco install golang -y
       scripts:
-        - export go=/c/Go/go.exe
+        - export go=/c/Go/bin/go.exe
         - mkdir build
         - cd build
         - cmake -G "Visual Studio 15 2017 Win64" ..
