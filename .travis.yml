@@ -1,0 +1,42 @@
+#Travis jobs summary: 
+# - 2 x86_64 jobs using gcc/clang
+# - 1 windows job using visual studio 2017
+
+language: c
+
+arch:
+  - amd64 #x86_64
+
+dist: bionic
+
+compiler:
+  - gcc
+  - clang
+
+matrix:
+  include:
+    #Windows build amd64 Visual Studio
+    - name: "Windows build Visual Studio"
+      os: windows
+      arch: amd64
+      install:
+        - choco install make -y
+      scripts:
+        - make 
+        - cd test1/
+        - bash build.sh
+        - bash run.sh
+        - cd $TRAVIS_BUILD_DIR
+        - cd test2 
+        - bash build.sh
+        - bash run.sh
+
+scripts: |-
+  make
+  cd test1/
+  bash build.sh
+  bash run.sh
+  cd $TRAVIS_BUILD_DIR
+  cd test2 
+  bash build.sh
+  bash run.sh
