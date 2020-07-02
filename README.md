@@ -77,6 +77,7 @@ convert it to a string or integer depending on context.
 
 ```
 mkdir build
+cd build
 cmake ..
 make
 ```
