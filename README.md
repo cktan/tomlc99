@@ -62,7 +62,7 @@ if (0 == (server = toml_table_in(conf, "server"))) {
 4. Convert that value to the appropriate type (I.E. string, int).
 
 ```c
-const char* raw;
+toml_raw_t raw;
 char* host;
 int64_t port;
 
