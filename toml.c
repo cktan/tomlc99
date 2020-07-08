@@ -298,7 +298,7 @@ struct toml_table_t {
 };
 
 
-static inline void xfree(const void* x) { if (x) FREE((void*)x); }
+static inline void xfree(const void* x) { if (x) FREE((void*)(intptr_t)x); }
 
 
 enum tokentype_t {
