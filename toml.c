@@ -1728,7 +1728,7 @@ static tokentype_t next_token(context_t* ctx, int dotisspecial)
 }
 
 
-const char* toml_key_in(toml_table_t* tab, int keyidx)
+const char* toml_key_in(const toml_table_t* tab, int keyidx)
 {
 	if (keyidx < tab->nkval) return tab->kval[keyidx]->key;
 	
@@ -1742,7 +1742,7 @@ const char* toml_key_in(toml_table_t* tab, int keyidx)
 }
 
 
-const char* toml_raw_in(toml_table_t* tab, const char* key)
+const char* toml_raw_in(const toml_table_t* tab, const char* key)
 {
 	int i;
 	for (i = 0; i < tab->nkval; i++) {
@@ -1752,7 +1752,7 @@ const char* toml_raw_in(toml_table_t* tab, const char* key)
 	return 0;
 }
 
-toml_array_t* toml_array_in(toml_table_t* tab, const char* key)
+toml_array_t* toml_array_in(const toml_table_t* tab, const char* key)
 {
 	int i;
 	for (i = 0; i < tab->narr; i++) {
@@ -1763,7 +1763,7 @@ toml_array_t* toml_array_in(toml_table_t* tab, const char* key)
 }
 
 
-toml_table_t* toml_table_in(toml_table_t* tab, const char* key)
+toml_table_t* toml_table_in(const toml_table_t* tab, const char* key)
 {
 	int i;
 	for (i = 0; i < tab->ntab; i++) {
@@ -1773,7 +1773,7 @@ toml_table_t* toml_table_in(toml_table_t* tab, const char* key)
 	return 0;
 }
 
-const char* toml_raw_at(toml_array_t* arr, int idx)
+const char* toml_raw_at(const toml_array_t* arr, int idx)
 {
 	if (arr->kind != 'v')
 		return 0;
@@ -1782,12 +1782,12 @@ const char* toml_raw_at(toml_array_t* arr, int idx)
 	return arr->u.val[idx];
 }
 
-char toml_array_kind(toml_array_t* arr)
+char toml_array_kind(const toml_array_t* arr)
 {
 	return arr->kind;
 }
 
-char toml_array_type(toml_array_t* arr)
+char toml_array_type(const toml_array_t* arr)
 {
 	if (arr->kind != 'v')
 		return 0;
@@ -1799,37 +1799,37 @@ char toml_array_type(toml_array_t* arr)
 }
 
 
-int toml_array_nelem(toml_array_t* arr)
+int toml_array_nelem(const toml_array_t* arr)
 {
 	return arr->nelem;
 }
 
-const char* toml_array_key(toml_array_t* arr)
+const char* toml_array_key(const toml_array_t* arr)
 {
 	return arr ? arr->key : (const char*) NULL;
 }
 
-int toml_table_nkval(toml_table_t* tab)
+int toml_table_nkval(const toml_table_t* tab)
 {
 	return tab->nkval;
 }
 
-int toml_table_narr(toml_table_t* tab)
+int toml_table_narr(const toml_table_t* tab)
 {
 	return tab->narr;
 }
 
-int toml_table_ntab(toml_table_t* tab)
+int toml_table_ntab(const toml_table_t* tab)
 {
 	return tab->ntab;
 }
 
-const char* toml_table_key(toml_table_t* tab)
+const char* toml_table_key(const toml_table_t* tab)
 {
 	return tab ? tab->key : (const char*) NULL;
 }
 
-toml_array_t* toml_array_at(toml_array_t* arr, int idx)
+toml_array_t* toml_array_at(const toml_array_t* arr, int idx)
 {
 	if (arr->kind != 'a')
 		return 0;
@@ -1838,7 +1838,7 @@ toml_array_t* toml_array_at(toml_array_t* arr, int idx)
 	return arr->u.arr[idx];
 }
 
-toml_table_t* toml_table_at(toml_array_t* arr, int idx)
+toml_table_t* toml_table_at(const toml_array_t* arr, int idx)
 {
 	if (arr->kind != 't')
 		return 0;
