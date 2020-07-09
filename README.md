@@ -18,7 +18,7 @@ The steps for getting values from our file is usually :
 1. Parse the whole TOML file.
 2. Get a single table from the file.
 3. Find a value from the table.
-4. Convert that value to the appropriate type (I.E. string, int).
+4. Convert that value to the appropriate type, i.e., string, int, etc.
 5. Then, free up that memory if needed.
 
 Below is an example of parsing the values from the example table.
@@ -95,7 +95,6 @@ toml_free(conf);
 
 /* Free any values returned from `toml_rto*`. */
 free(host);
-free(port);
 ```
 
 ## Building
