@@ -39,6 +39,9 @@
 typedef struct toml_table_t toml_table_t;
 typedef struct toml_array_t toml_array_t;
 
+/* A raw value, must be processed by toml_rto* before using. */
+typedef const char* toml_raw_t;
+
 /* Parse a file. Return a table on success, or 0 otherwise. 
  * Caller must toml_free(the-return-value) after use.
  */
@@ -61,7 +64,7 @@ TOML_EXTERN void toml_free(toml_table_t* tab);
 TOML_EXTERN const char* toml_key_in(const toml_table_t* tab, int keyidx);
 
 /* Lookup table by key. Return the element or 0 if not found. */
-TOML_EXTERN const char* toml_raw_in(const toml_table_t* tab, const char* key);
+TOML_EXTERN toml_raw_t toml_raw_in(const toml_table_t* tab, const char* key);
 TOML_EXTERN toml_array_t* toml_array_in(const toml_table_t* tab,
 										const char* key);
 TOML_EXTERN toml_table_t* toml_table_in(const toml_table_t* tab,
@@ -96,26 +99,26 @@ TOML_EXTERN int toml_table_ntab(const toml_table_t* tab);
 TOML_EXTERN const char* toml_table_key(const toml_table_t* tab);
 
 /* Deref array by index. Return the element at idx or 0 if out of range. */
-TOML_EXTERN const char* toml_raw_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_raw_t toml_raw_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_array_t* toml_array_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
-
 
 /* Raw to String. Caller must call free(ret) after use. 
  * Return 0 on success, -1 otherwise.
  */
-TOML_EXTERN int toml_rtos(const char* s, char** ret);
+TOML_EXTERN int toml_rtos(toml_raw_t s, char** ret);
 
 /* Raw to Boolean. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtob(const char* s, int* ret);
+TOML_EXTERN int toml_rtob(toml_raw_t s, int* ret);
 
 /* Raw to Integer. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtoi(const char* s, int64_t* ret);
+TOML_EXTERN int toml_rtoi(toml_raw_t s, int64_t* ret);
 
 /* Raw to Double. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtod(const char* s, double* ret);
+TOML_EXTERN int toml_rtod(toml_raw_t s, double* ret);
+
 /* Same as toml_rtod, but return the sanitized double in string form as well */
-TOML_EXTERN int toml_rtod_ex(const char* s, double* ret, char* buf, int buflen);
+TOML_EXTERN int toml_rtod_ex(toml_raw_t s, double* ret, char* buf, int buflen);
 
 /* Timestamp types. The year, month, day, hour, minute, second, z 
  * fields may be NULL if they are not relevant. e.g. In a DATE
@@ -134,7 +137,7 @@ struct toml_timestamp_t {
 };
 
 /* Raw to Timestamp. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtots(const char* s, toml_timestamp_t* ret);
+TOML_EXTERN int toml_rtots(toml_raw_t s, toml_timestamp_t* ret);
 
 /* misc */
 TOML_EXTERN int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret);

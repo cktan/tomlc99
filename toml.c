@@ -1741,8 +1741,7 @@ const char* toml_key_in(const toml_table_t* tab, int keyidx)
 	return 0;
 }
 
-
-const char* toml_raw_in(const toml_table_t* tab, const char* key)
+toml_raw_t toml_raw_in(const toml_table_t* tab, const char* key)
 {
 	int i;
 	for (i = 0; i < tab->nkval; i++) {
@@ -1773,7 +1772,7 @@ toml_table_t* toml_table_in(const toml_table_t* tab, const char* key)
 	return 0;
 }
 
-const char* toml_raw_at(const toml_array_t* arr, int idx)
+toml_raw_t toml_raw_at(const toml_array_t* arr, int idx)
 {
 	if (arr->kind != 'v')
 		return 0;
@@ -1848,7 +1847,7 @@ toml_table_t* toml_table_at(const toml_array_t* arr, int idx)
 }
 
 
-int toml_rtots(const char* src_, toml_timestamp_t* ret)
+int toml_rtots(toml_raw_t src_, toml_timestamp_t* ret)
 {
 	if (! src_) return -1;
 	
@@ -1942,7 +1941,7 @@ int toml_rtots(const char* src_, toml_timestamp_t* ret)
 
 
 /* Raw to boolean */
-int toml_rtob(const char* src, int* ret_)
+int toml_rtob(toml_raw_t src, int* ret_)
 {
 	if (!src) return -1;
 	int dummy;
@@ -1961,7 +1960,7 @@ int toml_rtob(const char* src, int* ret_)
 
 
 /* Raw to integer */
-int toml_rtoi(const char* src, int64_t* ret_)
+int toml_rtoi(toml_raw_t src, int64_t* ret_)
 {
 	if (!src) return -1;
 	
@@ -2024,7 +2023,7 @@ int toml_rtoi(const char* src, int64_t* ret_)
 }
 
 
-int toml_rtod_ex(const char* src, double* ret_, char* buf, int buflen)
+int toml_rtod_ex(toml_raw_t src, double* ret_, char* buf, int buflen)
 {
 	if (!src) return -1;
 	
@@ -2086,7 +2085,7 @@ int toml_rtod_ex(const char* src, double* ret_, char* buf, int buflen)
 	return (errno || *endp) ? -1 : 0;
 }
 
-int toml_rtod(const char* src, double* ret_)
+int toml_rtod(toml_raw_t src, double* ret_)
 {
 	char buf[100];
 	return toml_rtod_ex(src, ret_, buf, sizeof(buf));
@@ -2095,7 +2094,7 @@ int toml_rtod(const char* src, double* ret_)
 
 
 
-int toml_rtos(const char* src, char** ret)
+int toml_rtos(toml_raw_t src, char** ret)
 {
 	int multiline = 0;
 	const char* sp;
