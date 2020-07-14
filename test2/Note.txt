@@ -1,5 +1,6 @@
-Note that these tests are expected to fail as we do not validate Unicode strings.
+Note that we utilize the 'jq' command to normalize json files for comparison. Depending the
+verson of jq on your system, some tests may generate error that looks like this:
 
-% bash run.sh | grep FAIL
-toml-spec-tests/errors/string-basic-multiline-out-of-range-unicode-escape-2.toml  ... [FAILED]
-toml-spec-tests/errors/string-basic-out-of-range-unicode-escape-2.toml  ... [FAILED]
+   parse error: Exceeds depth limit for parsing at line 1
+
+This is an error in 'jq', and it does not indicate that the tests themselves fail.
