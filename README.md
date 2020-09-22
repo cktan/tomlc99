@@ -44,7 +44,7 @@ if (0 == conf) {
 fclose(fp);
 
 /* Alternatively, use `toml_parse` which takes a string rather than a file. */
-conf = toml_parse("A null terminated string that is TOML\0", errbuf, sizeof(errbuf);
+conf = toml_parse("A null terminated string that is TOML\0", errbuf, sizeof(errbuf));
 ```
 
 2. Get a single table from the file.
