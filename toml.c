@@ -686,6 +686,7 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
 	 * remember to free it if we error out. 
 	 */
 	char* newkey = normalize_key(ctx, keytok);
+	if (!newkey) return 0;
 
 	/* if key exists: error out. */
 	toml_keyval_t* dest = 0;
@@ -726,6 +727,7 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
 	 * remember to free it if we error out. 
 	 */
 	char* newkey = normalize_key(ctx, keytok);
+	if (!newkey) return 0;
 
 	/* if key exists: error out */
 	toml_table_t* dest = 0;
@@ -776,6 +778,7 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
 	 * remember to free it if we error out. 
 	 */
 	char* newkey = normalize_key(ctx, keytok);
+	if (!newkey) return 0;
 	
 	/* if key exists: error out */
 	if (key_kind(tab, newkey)) {
@@ -993,7 +996,9 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 								   "array type mismatch while processing array of arrays");
 					return -1;	/* not reached */
 				}
-				if (-1 == parse_array(ctx, create_array_in_array(ctx, arr))) return -1;
+				toml_array_t* subarr = create_array_in_array(ctx, arr);
+				if (!subarr) return -1;
+				if (-1 == parse_array(ctx, subarr)) return -1;
 				break;
 			}
 
@@ -1007,7 +1012,9 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 								   "array type mismatch while processing array of tables");
 					return -1;	/* not reached */
 				}
-				if (-1 == parse_table(ctx, create_table_in_array(ctx, arr))) return -1;
+				toml_table_t* subtab = create_table_in_array(ctx, arr);
+				if (!subtab) return -1;
+				if (-1 == parse_table(ctx, subtab)) return -1;
 				break;
 			}
 		
@@ -1066,6 +1073,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 		}
 		if (!subtab) {
 			subtab = create_keytable_in_table(ctx, tab, key);
+			if (!subtab) return -1;
 		}
 		if (-1 == next_token(ctx, 1)) return -1;
 		if (-1 == parse_keyval(ctx, subtab)) return -1;
@@ -1083,6 +1091,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 	case STRING:
 		{ /* key = "value" */
 			toml_keyval_t* keyval = create_keyval_in_table(ctx, tab, key);
+			if (!keyval) return -1;
 			token_t val = ctx->tok;
 			assert(keyval->val == 0);
 			keyval->val = STRNDUP(val.ptr, val.len);
@@ -1099,6 +1108,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 	case LBRACKET:
 		{ /* key = [ array ] */
 			toml_array_t* arr = create_keyarray_in_table(ctx, tab, key, 0);
+			if (!arr) return -1;
 			if (-1 == parse_array(ctx, arr)) return -1;
 			return 0;
 		}
@@ -1106,6 +1116,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 	case LBRACE:
 		{ /* key = { table } */
 			toml_table_t* nxttab = create_keytable_in_table(ctx, tab, key);
+			if (!nxttab) return -1;
 			if (-1 == parse_table(ctx, nxttab)) return -1;
 			return 0;
 		}
@@ -1152,8 +1163,10 @@ static int fill_tabpath(context_t* ctx)
 			return -1;		/* not reached */
 		}
 
+		char* key = normalize_key(ctx, ctx->tok);
+		if (!key) return -1;
 		ctx->tpath.tok[ctx->tpath.top] = ctx->tok;
-		ctx->tpath.key[ctx->tpath.top] = normalize_key(ctx, ctx->tok);
+		ctx->tpath.key[ctx->tpath.top] = key;
 		ctx->tpath.top++;
 	
 		if (-1 == next_token(ctx, 1)) return -1;
@@ -1282,21 +1295,21 @@ static int parse_select(context_t* ctx)
 
 	if (! llb) {
 		/* [x.y.z] -> create z = {} in x.y */
-		ctx->curtab = create_keytable_in_table(ctx, ctx->curtab, z);
+		toml_table_t* curtab = create_keytable_in_table(ctx, ctx->curtab, z);
+		if (!curtab) return -1;
+		ctx->curtab = curtab;
 	} else {
 		/* [[x.y.z]] -> create z = [] in x.y */
 		toml_array_t* arr = 0;
 		{
 			char* zstr = normalize_key(ctx, z);
+			if (!zstr) return -1;
 			arr = toml_array_in(ctx->curtab, zstr);
 			xfree(zstr);
 		}
 		if (!arr) {
 			arr = create_keyarray_in_table(ctx, ctx->curtab, z, 't');
-			if (!arr) {
-				e_internal_error(ctx, FLINE);
-				return -1;
-			}
+			if (!arr) return -1;
 		}
 		if (arr->kind != 't') {
 			e_syntax_error(ctx, z.lineno, "array mismatch");
