@@ -349,7 +349,7 @@ struct context_t {
 #define TOSTRING(x)	 STRINGIFY(x)
 #define FLINE __FILE__ ":" TOSTRING(__LINE__)
 
-static tokentype_t next_token(context_t* ctx, int dotisspecial);
+static int next_token(context_t* ctx, int dotisspecial);
 
 /* error routines. All these functions longjmp to ctx->jmp */
 static int e_outofmemory(context_t* ctx, const char* fline)
@@ -1529,7 +1529,7 @@ void toml_free(toml_table_t* tab)
 }
 
 
-static tokentype_t ret_token(context_t* ctx, tokentype_t tok, int lineno, char* ptr, int len)
+static void set_token(context_t* ctx, tokentype_t tok, int lineno, char* ptr, int len)
 {
 	token_t t;
 	t.tok = tok;
@@ -1538,14 +1538,12 @@ static tokentype_t ret_token(context_t* ctx, tokentype_t tok, int lineno, char* 
 	t.len = len;
 	t.eof = 0;
 	ctx->tok = t;
-	return tok;
 }
 
-static tokentype_t ret_eof(context_t* ctx, int lineno)
+static void set_eof(context_t* ctx, int lineno)
 {
-	ret_token(ctx, NEWLINE, lineno, ctx->stop, 0);
+	set_token(ctx, NEWLINE, lineno, ctx->stop, 0);
 	ctx->tok.eof = 1;
-	return ctx->tok.tok;
 }
 
 
@@ -1584,17 +1582,18 @@ static int scan_time(const char* p, int* hh, int* mm, int* ss)
 }
 	
 
-static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
+static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 {
 	char* orig = p;
 	if (0 == strncmp(p, "'''", 3)) {
 		p = strstr(p + 3, "'''");
 		if (0 == p) {
 			e_syntax_error(ctx, lineno, "unterminated triple-s-quote");
-			return 0;		/* not reached */
+			return -1;		/* not reached */
 		}
 
-		return ret_token(ctx, STRING, lineno, orig, p + 3 - orig);
+		set_token(ctx, STRING, lineno, orig, p + 3 - orig);
+		return 0;
 	}
 
 	if (0 == strncmp(p, "\"\"\"", 3)) {
@@ -1609,33 +1608,35 @@ static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspe
 				if (*p == 'U') { hexreq = 8; continue; }
 				if (p[strspn(p, " \t\r")] == '\n') continue; /* allow for line ending backslash */
 				e_syntax_error(ctx, lineno, "bad escape char");
-				return 0;	/* not reached */
+				return -1;	/* not reached */
 			}
 			if (hexreq) {
 				hexreq--;
 				if (strchr("0123456789ABCDEF", *p)) continue;
 				e_syntax_error(ctx, lineno, "expect hex char");
-				return 0;	/* not reached */
+				return -1;	/* not reached */
 			}
 			if (*p == '\\') { escape = 1; continue; }
 			qcnt = (*p == '"') ? qcnt + 1 : 0; 
 		}
 		if (qcnt != 3) {
 			e_syntax_error(ctx, lineno, "unterminated triple-quote");
-			return 0;		/* not reached */
+			return -1;		/* not reached */
 		}
 
-		return ret_token(ctx, STRING, lineno, orig, p - orig);
+		set_token(ctx, STRING, lineno, orig, p - orig);
+		return 0;
 	}
 
 	if ('\'' == *p) {
 		for (p++; *p && *p != '\n' && *p != '\''; p++);
 		if (*p != '\'') {
 			e_syntax_error(ctx, lineno, "unterminated s-quote");
-			return 0;		/* not reached */
+			return -1;		/* not reached */
 		}
 
-		return ret_token(ctx, STRING, lineno, orig, p + 1 - orig);
+		set_token(ctx, STRING, lineno, orig, p + 1 - orig);
+		return 0;
 	}
 
 	if ('\"' == *p) {
@@ -1648,13 +1649,13 @@ static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspe
 				if (*p == 'u') { hexreq = 4; continue; }
 				if (*p == 'U') { hexreq = 8; continue; }
 				e_syntax_error(ctx, lineno, "bad escape char");
-				return 0;	/* not reached */
+				return -1;	/* not reached */
 			}
 			if (hexreq) {
 				hexreq--;
 				if (strchr("0123456789ABCDEF", *p)) continue;
 				e_syntax_error(ctx, lineno, "expect hex char");
-				return 0;	/* not reached */
+				return -1;	/* not reached */
 			}
 			if (*p == '\\') { escape = 1; continue; }
 			if (*p == '\n') break;
@@ -1662,10 +1663,11 @@ static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspe
 		}
 		if (*p != '"') {
 			e_syntax_error(ctx, lineno, "unterminated quote");
-			return 0;		/* not reached */
+			return -1;		/* not reached */
 		}
 
-		return ret_token(ctx, STRING, lineno, orig, p + 1 - orig);
+		set_token(ctx, STRING, lineno, orig, p + 1 - orig);
+		return 0;
 	}
 
 	/* check for timestamp without quotes */
@@ -1675,7 +1677,8 @@ static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspe
 		// squeeze out any spaces at end of string
 		for ( ; p[-1] == ' '; p--);
 		// tokenize
-		return ret_token(ctx, STRING, lineno, orig, p - orig);
+		set_token(ctx, STRING, lineno, orig, p - orig);
+		return 0;
 	}
 
 	/* literals */
@@ -1688,11 +1691,12 @@ static tokentype_t scan_string(context_t* ctx, char* p, int lineno, int dotisspe
 		break;
 	}
 
-	return ret_token(ctx, STRING, lineno, orig, p - orig);
+	set_token(ctx, STRING, lineno, orig, p - orig);
+	return 0;
 }
 
 
-static tokentype_t next_token(context_t* ctx, int dotisspecial)
+static int next_token(context_t* ctx, int dotisspecial)
 {
 	int	  lineno = ctx->tok.lineno;
 	char* p = ctx->tok.ptr;
@@ -1712,17 +1716,19 @@ static tokentype_t next_token(context_t* ctx, int dotisspecial)
 			continue;
 		}
 
-		if (dotisspecial && *p == '.')
-			return ret_token(ctx, DOT, lineno, p, 1);
+		if (dotisspecial && *p == '.') {
+			set_token(ctx, DOT, lineno, p, 1);
+			return 0;
+		}
 	
 		switch (*p) {
-		case ',': return ret_token(ctx, COMMA, lineno, p, 1);
-		case '=': return ret_token(ctx, EQUAL, lineno, p, 1);
-		case '{': return ret_token(ctx, LBRACE, lineno, p, 1);
-		case '}': return ret_token(ctx, RBRACE, lineno, p, 1);
-		case '[': return ret_token(ctx, LBRACKET, lineno, p, 1);
-		case ']': return ret_token(ctx, RBRACKET, lineno, p, 1);
-		case '\n': return ret_token(ctx, NEWLINE, lineno, p, 1);
+		case ',': set_token(ctx, COMMA, lineno, p, 1); return 0;
+		case '=': set_token(ctx, EQUAL, lineno, p, 1); return 0;
+		case '{': set_token(ctx, LBRACE, lineno, p, 1); return 0;
+		case '}': set_token(ctx, RBRACE, lineno, p, 1); return 0;
+		case '[': set_token(ctx, LBRACKET, lineno, p, 1); return 0;
+		case ']': set_token(ctx, RBRACKET, lineno, p, 1); return 0;
+		case '\n': set_token(ctx, NEWLINE, lineno, p, 1); return 0;
 		case '\r': case ' ': case '\t':
 			/* ignore white spaces */
 			p++;
@@ -1732,7 +1738,8 @@ static tokentype_t next_token(context_t* ctx, int dotisspecial)
 		return scan_string(ctx, p, lineno, dotisspecial);
 	}
 
-	return ret_eof(ctx, lineno);
+	set_eof(ctx, lineno);
+	return 0;
 }
 
 
