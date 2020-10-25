@@ -860,6 +860,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab);
  */
 static int parse_table(context_t* ctx, toml_table_t* tab)
 {
+	/* EAT_TOKEN(ctx, LBRACE, 1) */
 	if (ctx->tok.tok != LBRACE) {
 		e_syntax_error(ctx, ctx->tok.lineno, "expect a left brace");
 		return -1;
@@ -888,6 +889,7 @@ static int parse_table(context_t* ctx, toml_table_t* tab)
 
 		/* on comma, continue to scan for next keyval */
 		if (ctx->tok.tok == COMMA) {
+			/* EAT_TOKEN(ctx, COMMA, 1) */
 			if (-1 == next_token(ctx, 1)) return -1;
 			continue;
 		}
@@ -898,6 +900,7 @@ static int parse_table(context_t* ctx, toml_table_t* tab)
 		e_syntax_error(ctx, ctx->tok.lineno, "expect a right brace");
 		return -1;
 	}
+	/* EAT_TOKEN(ctx, RBRACE, 1) */
 	if (-1 == next_token(ctx, 1)) return -1;
 
 	return 0;
@@ -922,6 +925,7 @@ static int valtype(const char* val)
 /* We are at '[...]' */
 static int parse_array(context_t* ctx, toml_array_t* arr)
 {
+	/* EAT_TOKEN(ctx, LBRACKET, 0) */
 	if (ctx->tok.tok != LBRACKET) {
 		e_syntax_error(ctx, ctx->tok.lineno, "expect a left bracket");
 		return -1;
@@ -971,6 +975,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 					return -1;
 				}
 
+				/* EAT_TOKEN(ctx, STRING, 0) */
 				if (-1 == next_token(ctx, 0)) return -1;
 				break;
 			}
@@ -1016,12 +1021,14 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 
 		/* on comma, continue to scan for next element */
 		if (ctx->tok.tok == COMMA) {
+			/* EAT_TOKEN(ctx, COMMA, 0) */
 			if (-1 == next_token(ctx, 0)) return -1;
 			continue;
 		}
 		break;
 	}
 
+	/* EAT_TOKEN(ctx, RBRACKET, 1) */
 	if (ctx->tok.tok != RBRACKET) {
 		e_syntax_error(ctx, ctx->tok.lineno, "expect a right bracket");
 		return -1;
@@ -1041,6 +1048,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 static int parse_keyval(context_t* ctx, toml_table_t* tab)
 {
 	token_t key = ctx->tok;
+	/* EAT_TOKEN(ctx, STRING, 1) */
 
 	if (ctx->tok.tok != STRING) {
 		e_syntax_error(ctx, ctx->tok.lineno, "expect a string");
@@ -1265,9 +1273,11 @@ static int parse_select(context_t* ctx)
 	   and '[ [' would be taken as '[[', which is wrong. */
 
 	/* eat [ or [[ */
+	/* EAT_TOKEN(ctx, LBRACKET, 1) */
 	if (-1 == next_token(ctx, 1)) return -1;
 	if (llb) {
 		assert(ctx->tok.tok == LBRACKET);
+		/* EAT_TOKEN(ctx, LBRACKET, 1) */
 		if (-1 == next_token(ctx, 1)) return -1;
 	}
 
@@ -1341,8 +1351,10 @@ static int parse_select(context_t* ctx)
 			e_syntax_error(ctx, ctx->tok.lineno, "expects ]]");
 			return -1;
 		}
+		/* EAT_TOKEN(ctx, RBRACKET, 1) */
 		if (-1 == next_token(ctx, 1)) return -1;
 	}
+	/* EAT_TOKEN(ctx, RBRACKET, 1) */
 	if (-1 == next_token(ctx, 1)) return -1;
 		
 	if (ctx->tok.tok != NEWLINE) {
@@ -1404,6 +1416,7 @@ toml_table_t* toml_parse(char* conf,
 				goto fail;
 			}
 
+			/* EAT_TOKEN(&ctx, NEWLINE, 1) */
 			if (-1 == next_token(&ctx, 1)) goto fail;
 			break;
 		
