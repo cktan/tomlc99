@@ -854,18 +854,28 @@ static int skip_newlines(context_t* ctx, int isdotspecial)
 
 static int parse_keyval(context_t* ctx, toml_table_t* tab);
 
+static inline int eat_token(context_t* ctx, tokentype_t typ, int isdotspecial, const char* fline)
+{
+	if (ctx->tok.tok != typ) {
+		e_internal_error(ctx, fline);
+		return -1;
+	}
+
+	if (-1 == next_token(ctx, isdotspecial))
+		return -1;
+
+	return 0;
+}
+
+
 
 /* We are at '{ ... }'.
  * Parse the table.
  */
 static int parse_table(context_t* ctx, toml_table_t* tab)
 {
-	/* EAT_TOKEN(ctx, LBRACE, 1) */
-	if (ctx->tok.tok != LBRACE) {
-		e_syntax_error(ctx, ctx->tok.lineno, "expect a left brace");
+	if (eat_token(ctx, LBRACE, 1, FLINE))
 		return -1;
-	}
-	if (-1 == next_token(ctx, 1)) return -1;
 
 	for (;;) {
 		if (ctx->tok.tok == NEWLINE) {
@@ -889,20 +899,13 @@ static int parse_table(context_t* ctx, toml_table_t* tab)
 
 		/* on comma, continue to scan for next keyval */
 		if (ctx->tok.tok == COMMA) {
-			/* EAT_TOKEN(ctx, COMMA, 1) */
-			if (-1 == next_token(ctx, 1)) return -1;
+			if (eat_token(ctx, COMMA, 1, FLINE)) return -1;
 			continue;
 		}
 		break;
 	}
 
-	if (ctx->tok.tok != RBRACE) {
-		e_syntax_error(ctx, ctx->tok.lineno, "expect a right brace");
-		return -1;
-	}
-	/* EAT_TOKEN(ctx, RBRACE, 1) */
-	if (-1 == next_token(ctx, 1)) return -1;
-
+	if (eat_token(ctx, RBRACE, 1, FLINE)) return -1;
 	return 0;
 }
 
@@ -925,13 +928,8 @@ static int valtype(const char* val)
 /* We are at '[...]' */
 static int parse_array(context_t* ctx, toml_array_t* arr)
 {
-	/* EAT_TOKEN(ctx, LBRACKET, 0) */
-	if (ctx->tok.tok != LBRACKET) {
-		e_syntax_error(ctx, ctx->tok.lineno, "expect a left bracket");
-		return -1;
-	}
-	if (-1 == next_token(ctx, 0)) return -1;
-
+	if (eat_token(ctx, LBRACKET, 0, FLINE)) return -1;
+	
 	for (;;) {
 		if (-1 == skip_newlines(ctx, 0)) return -1;
 	
@@ -975,8 +973,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 					return -1;
 				}
 
-				/* EAT_TOKEN(ctx, STRING, 0) */
-				if (-1 == next_token(ctx, 0)) return -1;
+				if (eat_token(ctx, STRING, 0, FLINE)) return -1;
 				break;
 			}
 
@@ -1021,21 +1018,13 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 
 		/* on comma, continue to scan for next element */
 		if (ctx->tok.tok == COMMA) {
-			/* EAT_TOKEN(ctx, COMMA, 0) */
-			if (-1 == next_token(ctx, 0)) return -1;
+			if (eat_token(ctx, COMMA, 0, FLINE)) return -1;
 			continue;
 		}
 		break;
 	}
 
-	/* EAT_TOKEN(ctx, RBRACKET, 1) */
-	if (ctx->tok.tok != RBRACKET) {
-		e_syntax_error(ctx, ctx->tok.lineno, "expect a right bracket");
-		return -1;
-	}
-
-	if (-1 == next_token(ctx, 1)) return -1;
-
+	if (eat_token(ctx, RBRACKET, 1, FLINE)) return -1;
 	return 0;
 }
 
@@ -1048,14 +1037,8 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 static int parse_keyval(context_t* ctx, toml_table_t* tab)
 {
 	token_t key = ctx->tok;
-	/* EAT_TOKEN(ctx, STRING, 1) */
-
-	if (ctx->tok.tok != STRING) {
-		e_syntax_error(ctx, ctx->tok.lineno, "expect a string");
-		return -1;
-	}
-	if (-1 == next_token(ctx, 1)) return -1;
-
+	if (eat_token(ctx, STRING, 1, FLINE)) return -1;
+	
 	if (ctx->tok.tok == DOT) {
 		/* handle inline dotted key. 
 		   e.g. 
@@ -1273,12 +1256,10 @@ static int parse_select(context_t* ctx)
 	   and '[ [' would be taken as '[[', which is wrong. */
 
 	/* eat [ or [[ */
-	/* EAT_TOKEN(ctx, LBRACKET, 1) */
-	if (-1 == next_token(ctx, 1)) return -1;
+	if (eat_token(ctx, LBRACKET, 1, FLINE)) return -1;
 	if (llb) {
 		assert(ctx->tok.tok == LBRACKET);
-		/* EAT_TOKEN(ctx, LBRACKET, 1) */
-		if (-1 == next_token(ctx, 1)) return -1;
+		if (eat_token(ctx, LBRACKET, 1, FLINE)) return -1;
 	}
 
 	if (-1 == fill_tabpath(ctx)) return -1;
