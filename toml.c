@@ -841,7 +841,7 @@ static toml_table_t* create_table_in_array(context_t* ctx,
 static int skip_newlines(context_t* ctx, int isdotspecial)
 {
 	while (ctx->tok.tok == NEWLINE) {
-		if (-1 == next_token(ctx, isdotspecial)) return -1;
+		if (next_token(ctx, isdotspecial)) return -1;
 		if (ctx->tok.eof) break;
 	}
 	return 0;
@@ -855,7 +855,7 @@ static inline int eat_token(context_t* ctx, tokentype_t typ, int isdotspecial, c
 	if (ctx->tok.tok != typ) 
 		return e_internal(ctx, fline);
 
-	if (-1 == next_token(ctx, isdotspecial))
+	if (next_token(ctx, isdotspecial))
 		return -1;
 
 	return 0;
@@ -924,7 +924,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 	if (eat_token(ctx, LBRACKET, 0, FLINE)) return -1;
 	
 	for (;;) {
-		if (-1 == skip_newlines(ctx, 0)) return -1;
+		if (skip_newlines(ctx, 0)) return -1;
 	
 		/* until ] */
 		if (ctx->tok.tok == RBRACKET) break;
@@ -975,7 +975,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 				}
 				toml_array_t* subarr = create_array_in_array(ctx, arr);
 				if (!subarr) return -1;
-				if (-1 == parse_array(ctx, subarr)) return -1;
+				if (parse_array(ctx, subarr)) return -1;
 				break;
 			}
 
@@ -990,7 +990,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 				}
 				toml_table_t* subtab = create_table_in_array(ctx, arr);
 				if (!subtab) return -1;
-				if (-1 == parse_table(ctx, subtab)) return -1;
+				if (parse_table(ctx, subtab)) return -1;
 				break;
 			}
 		
@@ -998,7 +998,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 			return e_syntax(ctx, ctx->tok.lineno, "syntax error");
 		}
 
-		if (-1 == skip_newlines(ctx, 0)) return -1;
+		if (skip_newlines(ctx, 0)) return -1;
 
 		/* on comma, continue to scan for next element */
 		if (ctx->tok.tok == COMMA) {
@@ -1039,8 +1039,8 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 			subtab = create_keytable_in_table(ctx, tab, key);
 			if (!subtab) return -1;
 		}
-		if (-1 == next_token(ctx, 1)) return -1;
-		if (-1 == parse_keyval(ctx, subtab)) return -1;
+		if (next_token(ctx, 1)) return -1;
+		if (parse_keyval(ctx, subtab)) return -1;
 		return 0;
 	}
 
@@ -1048,7 +1048,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 		return e_syntax(ctx, ctx->tok.lineno, "missing =");
 	}
 
-	if (-1 == next_token(ctx, 0)) return -1;
+	if (next_token(ctx, 0)) return -1;
 
 	switch (ctx->tok.tok) {
 	case STRING:
@@ -1063,7 +1063,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 				return -1;
 			}
 
-			if (-1 == next_token(ctx, 1)) return -1;
+			if (next_token(ctx, 1)) return -1;
 		
 			return 0;
 		}
@@ -1072,7 +1072,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 		{ /* key = [ array ] */
 			toml_array_t* arr = create_keyarray_in_table(ctx, tab, key, 0);
 			if (!arr) return -1;
-			if (-1 == parse_array(ctx, arr)) return -1;
+			if (parse_array(ctx, arr)) return -1;
 			return 0;
 		}
 
@@ -1080,7 +1080,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 		{ /* key = { table } */
 			toml_table_t* nxttab = create_keytable_in_table(ctx, tab, key);
 			if (!nxttab) return -1;
-			if (-1 == parse_table(ctx, nxttab)) return -1;
+			if (parse_table(ctx, nxttab)) return -1;
 			return 0;
 		}
 
@@ -1129,7 +1129,7 @@ static int fill_tabpath(context_t* ctx)
 		ctx->tpath.key[ctx->tpath.top] = key;
 		ctx->tpath.top++;
 	
-		if (-1 == next_token(ctx, 1)) return -1;
+		if (next_token(ctx, 1)) return -1;
 
 		if (ctx->tok.tok == RBRACKET) break;
 
@@ -1137,7 +1137,7 @@ static int fill_tabpath(context_t* ctx)
 			return e_syntax(ctx, lineno, "invalid key");
 		}
 
-		if (-1 == next_token(ctx, 1)) return -1;
+		if (next_token(ctx, 1)) return -1;
 	}
 
 	if (ctx->tpath.top <= 0) {
@@ -1237,7 +1237,7 @@ static int parse_select(context_t* ctx)
 		if (eat_token(ctx, LBRACKET, 1, FLINE)) return -1;
 	}
 
-	if (-1 == fill_tabpath(ctx)) return -1;
+	if (fill_tabpath(ctx)) return -1;
 
 	/* For [x.y.z] or [[x.y.z]], remove z from tpath. 
 	 */
@@ -1246,7 +1246,7 @@ static int parse_select(context_t* ctx)
 	ctx->tpath.top--;
 
 	/* set up ctx->curtab */
-	if (-1 == walk_tabpath(ctx)) return -1;
+	if (walk_tabpath(ctx)) return -1;
 
 	if (! llb) {
 		/* [x.y.z] -> create z = {} in x.y */
@@ -1304,15 +1304,14 @@ static int parse_select(context_t* ctx)
 		if (! (ctx->tok.ptr + 1 < ctx->stop && ctx->tok.ptr[1] == ']')) {
 			return e_syntax(ctx, ctx->tok.lineno, "expects ]]");
 		}
-		/* EAT_TOKEN(ctx, RBRACKET, 1) */
-		if (-1 == next_token(ctx, 1)) return -1;
+		if (eat_token(ctx, RBRACKET, 1, FLINE)) return -1;
 	}
-	/* EAT_TOKEN(ctx, RBRACKET, 1) */
-	if (-1 == next_token(ctx, 1)) return -1;
-		
-	if (ctx->tok.tok != NEWLINE) {
+	
+	if (eat_token(ctx, RBRACKET, 1, FLINE))
+		return -1;
+	
+	if (ctx->tok.tok != NEWLINE) 
 		return e_syntax(ctx, ctx->tok.lineno, "extra chars after ] or ]]");
-	}
 
 	return 0;
 }
@@ -1358,22 +1357,22 @@ toml_table_t* toml_parse(char* conf,
 		switch (tok.tok) {
 		
 		case NEWLINE:
-			if (-1 == next_token(&ctx, 1)) goto fail;
+			if (next_token(&ctx, 1)) goto fail;
 			break;
 		
 		case STRING:
-			if (-1 == parse_keyval(&ctx, ctx.curtab)) goto fail;
+			if (parse_keyval(&ctx, ctx.curtab)) goto fail;
+			
 			if (ctx.tok.tok != NEWLINE) {
 				e_syntax(&ctx, ctx.tok.lineno, "extra chars after value");
 				goto fail;
 			}
 
-			/* EAT_TOKEN(&ctx, NEWLINE, 1) */
-			if (-1 == next_token(&ctx, 1)) goto fail;
+			if (eat_token(&ctx, NEWLINE, 1, FLINE)) goto fail;
 			break;
 		
 		case LBRACKET:	/* [ x.y.z ] or [[ x.y.z ]] */
-			if (-1 == parse_select(&ctx)) goto fail;
+			if (parse_select(&ctx)) goto fail;
 			break;
 		
 		default:
