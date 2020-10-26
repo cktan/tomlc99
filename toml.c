@@ -46,10 +46,10 @@ void toml_set_memutil(void* (*xxmalloc)(size_t),
 					  void* (*xxcalloc)(size_t, size_t),
 					  void* (*xxrealloc)(void*, size_t))
 {
-	ppmalloc = xxmalloc;
-	ppfree = xxfree;
-	ppcalloc = xxcalloc;
-	pprealloc = xxrealloc;
+	if (xxmalloc) ppmalloc = xxmalloc;
+	if (xxfree) ppfree = xxfree;
+	if (xxcalloc) ppcalloc = xxcalloc;
+	if (xxrealloc) pprealloc = xxrealloc;
 }
 
 
