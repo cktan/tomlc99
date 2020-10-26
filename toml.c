@@ -1057,12 +1057,10 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 			toml_keyval_t* keyval = create_keyval_in_table(ctx, tab, key);
 			if (!keyval) return -1;
 			token_t val = ctx->tok;
+			
 			assert(keyval->val == 0);
-			keyval->val = STRNDUP(val.ptr, val.len);
-			if (! keyval->val) {
-				e_outofmemory(ctx, FLINE);
-				return -1;
-			}
+			if (! (keyval->val = STRNDUP(val.ptr, val.len))) 
+				return e_outofmemory(ctx, FLINE);
 
 			if (next_token(ctx, 1)) return -1;
 		
@@ -1116,13 +1114,11 @@ static int fill_tabpath(context_t* ctx)
 	ctx->tpath.top = 0;
 	
 	for (;;) {
-		if (ctx->tpath.top >= 10) {
+		if (ctx->tpath.top >= 10)
 			return e_syntax(ctx, lineno, "table path is too deep; max allowed is 10.");
-		}
 
-		if (ctx->tok.tok != STRING) {
+		if (ctx->tok.tok != STRING) 
 			return e_syntax(ctx, lineno, "invalid or missing key");
-		}
 
 		char* key = normalize_key(ctx, ctx->tok);
 		if (!key) return -1;
@@ -1134,16 +1130,14 @@ static int fill_tabpath(context_t* ctx)
 
 		if (ctx->tok.tok == RBRACKET) break;
 
-		if (ctx->tok.tok != DOT) {
+		if (ctx->tok.tok != DOT) 
 			return e_syntax(ctx, lineno, "invalid key");
-		}
 
 		if (next_token(ctx, 1)) return -1;
 	}
 
-	if (ctx->tpath.top <= 0) {
+	if (ctx->tpath.top <= 0)
 		return e_syntax(ctx, lineno, "empty table selector");
-	}
 
 	return 0;
 }
@@ -1170,12 +1164,12 @@ static int walk_tabpath(context_t* ctx)
 
 		case 'a':
 			/* found an array. nexttab is the last table in the array. */
-			if (nextarr->kind != 't') {
+			if (nextarr->kind != 't') 
 				return e_internal(ctx, FLINE);
-			}
-			if (nextarr->nelem == 0) {
+
+			if (nextarr->nelem == 0) 
 				return e_internal(ctx, FLINE);
-			}
+
 			nexttab = nextarr->u.tab[nextarr->nelem-1];
 			break;
 
@@ -1186,21 +1180,16 @@ static int walk_tabpath(context_t* ctx)
 			{ /* Not found. Let's create an implicit table. */
 				int n = curtab->ntab;
 				toml_table_t** base = (toml_table_t**) REALLOC(curtab->tab, (n+1) * sizeof(*base));
-				if (0 == base) {
-					e_outofmemory(ctx, FLINE);
-					return -1;
-				}
+				if (0 == base) 
+					return e_outofmemory(ctx, FLINE);
+
 				curtab->tab = base;
 		
-				if (0 == (base[n] = (toml_table_t*) CALLOC(1, sizeof(*base[n])))) {
-					e_outofmemory(ctx, FLINE);
-					return -1;
-				}
+				if (0 == (base[n] = (toml_table_t*) CALLOC(1, sizeof(*base[n])))) 
+					return e_outofmemory(ctx, FLINE);
 		
-				if (0 == (base[n]->key = STRDUP(key))) {
-					e_outofmemory(ctx, FLINE);
-					return -1;
-				}
+				if (0 == (base[n]->key = STRDUP(key))) 
+					return e_outofmemory(ctx, FLINE);
 		
 				nexttab = curtab->tab[curtab->ntab++];
 		
@@ -1267,9 +1256,8 @@ static int parse_select(context_t* ctx)
 			arr = create_keyarray_in_table(ctx, ctx->curtab, z, 't');
 			if (!arr) return -1;
 		}
-		if (arr->kind != 't') {
+		if (arr->kind != 't') 
 			return e_syntax(ctx, z.lineno, "array mismatch");
-		}
 
 		/* add to z[] */
 		toml_table_t* dest;
