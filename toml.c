@@ -30,7 +30,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
-#include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
 #include "toml.h"
@@ -80,7 +79,34 @@ static char* STRNDUP(const char* s, size_t n)
 	return p;
 }
 
+/* Below functions from ctype.h are adopted from Musl (standard MIT license):
+ *   Copyright (C) 2005-2014 Rich Felker, et al. */
+static inline int ISLOWER(int c)
+{
+    return (unsigned)c - 'a' < 26;
+}
 
+static inline int TOUPPER(int c)
+{
+    if (ISLOWER(c))
+        return c & 0x5f;
+    return c;
+}
+
+static inline int ISALPHA(int c)
+{
+    return ((unsigned)c | 32) - 'a' < 26;
+}
+
+static inline int ISDIGIT(int c)
+{
+    return (unsigned)c - '0' < 10;
+}
+
+static inline int ISALNUM(int c)
+{
+    return ISALPHA(c) || ISDIGIT(c);
+}
 
 /**
  * Convert a char in utf8 into UCS, and store it in *ret.
@@ -604,7 +630,7 @@ static char* normalize_key(context_t* ctx, token_t strtok)
 	const char* xp;
 	for (xp = sp; xp != sq; xp++) {
 		int k = *xp;
-		if (isalnum(k)) continue;
+		if (ISALNUM(k)) continue;
 		if (k == '_' || k == '-') continue;
 		e_badkey(ctx, lineno);
 		return 0;
@@ -1511,7 +1537,7 @@ static void set_eof(context_t* ctx, int lineno)
 static int scan_digits(const char* p, int n)
 {
 	int ret = 0;
-	for ( ; n > 0 && isdigit(*p); n--, p++) {
+	for ( ; n > 0 && ISDIGIT(*p); n--, p++) {
 		ret = 10 * ret + (*p - '0');
 	}
 	return n ? -1 : ret;
@@ -1625,7 +1651,7 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	/* check for timestamp without quotes */
 	if (0 == scan_date(p, 0, 0, 0) || 0 == scan_time(p, 0, 0, 0)) {
 		// forward thru the timestamp
-		for ( ; strchr("0123456789.:+-T Z", toupper(*p)); p++);
+		for ( ; strchr("0123456789.:+-T Z", TOUPPER(*p)); p++);
 		// squeeze out any spaces at end of string
 		for ( ; p[-1] == ' '; p--);
 		// tokenize
@@ -1881,14 +1907,14 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t* ret)
 			} else if (*p == '+' || *p == '-') {
 				*z++ = *p++;
 				
-				if (! (isdigit(p[0]) && isdigit(p[1]))) return -1;
+				if (! (ISDIGIT(p[0]) && ISDIGIT(p[1]))) return -1;
 				*z++ = *p++;
 				*z++ = *p++;
 				
 				if (*p == ':') {
 					*z++ = *p++;
 					
-					if (! (isdigit(p[0]) && isdigit(p[1]))) return -1;
+					if (! (ISDIGIT(p[0]) && ISDIGIT(p[1]))) return -1;
 					*z++ = *p++;
 					*z++ = *p++;
 				}
