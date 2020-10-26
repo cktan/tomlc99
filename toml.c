@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 #include "toml.h"
 
 
@@ -281,7 +282,7 @@ struct toml_array_t {
 
 struct toml_table_t {
 	const char* key;		/* key to this table */
-	int implicit;		/* table was created implicitly */
+	bool implicit;		/* table was created implicitly */
 
 	/* key-values in the table */
 	int			nkval;
@@ -722,7 +723,7 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
 		/* special case: if table exists, but was created implicitly ... */
 		if (dest && dest->implicit) {
 			/* we make it explicit now, and simply return it. */
-			dest->implicit = 0;
+			dest->implicit = false;
 			return dest;
 		}
 		e_keyexists(ctx, keytok.lineno);
@@ -1204,7 +1205,7 @@ static int walk_tabpath(context_t* ctx)
 				nexttab = curtab->tab[curtab->ntab++];
 		
 				/* tabs created by walk_tabpath are considered implicit */
-				nexttab->implicit = 1;
+				nexttab->implicit = true;
 			}
 			break;
 		}
@@ -1275,21 +1276,16 @@ static int parse_select(context_t* ctx)
 		{
 			int n = arr->nelem;
 			toml_table_t** base = REALLOC(arr->u.tab, (n+1) * sizeof(*base));
-			if (0 == base) {
-				e_outofmemory(ctx, FLINE);
-				return -1;
-			}
+			if (0 == base) 
+				return e_outofmemory(ctx, FLINE);
+
 			arr->u.tab = base;
 		
-			if (0 == (base[n] = CALLOC(1, sizeof(*base[n])))) {
-				e_outofmemory(ctx, FLINE);
-				return-1;
-			}
+			if (0 == (base[n] = CALLOC(1, sizeof(*base[n])))) 
+				return e_outofmemory(ctx, FLINE);
 		
-			if (0 == (base[n]->key = STRDUP("__anon__"))) {
-				e_outofmemory(ctx, FLINE);
-				return -1;
-			}
+			if (0 == (base[n]->key = STRDUP("__anon__"))) 
+				return e_outofmemory(ctx, FLINE);
 		
 			dest = arr->u.tab[arr->nelem++];
 		}
