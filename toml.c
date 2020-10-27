@@ -39,24 +39,20 @@
 static void* (*ppmalloc)(size_t) = malloc;
 static void (*ppfree)(void*) = free;
 static void* (*ppcalloc)(size_t, size_t) = calloc;
-static void* (*pprealloc)(void*, size_t) = realloc;
 
 void toml_set_memutil(void* (*xxmalloc)(size_t),
 					  void	(*xxfree)(void*),
-					  void* (*xxcalloc)(size_t, size_t),
-					  void* (*xxrealloc)(void*, size_t))
+					  void* (*xxcalloc)(size_t, size_t))
 {
 	if (xxmalloc) ppmalloc = xxmalloc;
 	if (xxfree) ppfree = xxfree;
 	if (xxcalloc) ppcalloc = xxcalloc;
-	if (xxrealloc) pprealloc = xxrealloc;
 }
 
 
 #define MALLOC(a)	  ppmalloc(a)
 #define FREE(a)		  ppfree(a)
 #define CALLOC(a,b)	  ppcalloc(a,b)
-#define REALLOC(a,b)  pprealloc(a,b)
 
 static char* STRDUP(const char* s)
 {
@@ -384,6 +380,28 @@ static int e_keyexists(context_t* ctx, int lineno)
 	return -1;
 }
 
+static void* expand(void* p, int sz, int newsz)
+{
+	void* s = malloc(newsz);
+	if (!s) return 0;
+	
+	memcpy(s, p, sz);
+	free(p);
+	return s;
+}
+
+static void** expand_ptrarr(void** p, int n)
+{
+	void** s = malloc((n+1) * sizeof(void*));
+	if (!s) return 0;
+
+	s[n] = 0;
+	memcpy(s, p, n * sizeof(void*));
+	free(p);
+	return s;
+}
+
+
 static char* norm_lit_str(const char* src, int srclen,
 						  int multiline,
 						  char* errbuf, int errbufsz)
@@ -398,13 +416,15 @@ static char* norm_lit_str(const char* src, int srclen,
 	/* scan forward on src */
 	for (;;) {
 		if (off >=	max - 10) { /* have some slack for misc stuff */
-			char* x = REALLOC(dst, max += 50);
+			int newmax = max + 50;
+			char* x = expand(dst, max, newmax);
 			if (!x) {
 				xfree(dst);
 				snprintf(errbuf, errbufsz, "out of memory");
 				return 0;
 			}
 			dst = x;
+			max = newmax;
 		}
 	
 		/* finished? */
@@ -451,13 +471,15 @@ static char* norm_basic_str(const char* src, int srclen,
 	/* scan forward on src */
 	for (;;) {
 		if (off >=	max - 10) { /* have some slack for misc stuff */
-			char* x = REALLOC(dst, max += 50);
+			int newmax = max + 50;
+			char* x = expand(dst, max, newmax);
 			if (!x) {
 				xfree(dst);
 				snprintf(errbuf, errbufsz, "out of memory");
 				return 0;
 			}
 			dst = x;
+			max = newmax;
 		}
 	
 		/* finished? */
@@ -685,7 +707,7 @@ static toml_keyval_t* create_keyval_in_table(context_t* ctx, toml_table_t* tab, 
 	/* make a new entry */
 	int n = tab->nkval;
 	toml_keyval_t** base;
-	if (0 == (base = (toml_keyval_t**) REALLOC(tab->kval, (n+1) * sizeof(*base)))) {
+	if (0 == (base = (toml_keyval_t**) expand_ptrarr((void**)tab->kval, n))) {
 		xfree(newkey);
 		e_outofmemory(ctx, FLINE);
 		return 0;
@@ -733,7 +755,7 @@ static toml_table_t* create_keytable_in_table(context_t* ctx, toml_table_t* tab,
 	/* create a new table entry */
 	int n = tab->ntab;
 	toml_table_t** base;
-	if (0 == (base = (toml_table_t**) REALLOC(tab->tab, (n+1) * sizeof(*base)))) {
+	if (0 == (base = (toml_table_t**) expand_ptrarr((void**)tab->tab, n))) {
 		xfree(newkey);
 		e_outofmemory(ctx, FLINE);
 		return 0;
@@ -776,7 +798,7 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
 	/* make a new array entry */
 	int n = tab->narr;
 	toml_array_t** base;
-	if (0 == (base = (toml_array_t**) REALLOC(tab->arr, (n+1) * sizeof(*base)))) {
+	if (0 == (base = (toml_array_t**) expand_ptrarr((void**)tab->arr, n))) {
 		xfree(newkey);
 		e_outofmemory(ctx, FLINE);
 		return 0;
@@ -801,20 +823,21 @@ static toml_array_t* create_keyarray_in_table(context_t* ctx,
 static toml_array_t* create_array_in_array(context_t* ctx,
 										   toml_array_t* parent)
 {
-	int n = parent->nelem;
+	const int n = parent->nelem;
 	toml_array_t** base;
-	if (0 == (base = (toml_array_t**) REALLOC(parent->u.arr, (n+1) * sizeof(*base)))) {
+	if (0 == (base = (toml_array_t**) expand_ptrarr((void**)parent->u.arr, n))) {
 		e_outofmemory(ctx, FLINE);
 		return 0;
 	}
 	parent->u.arr = base;
+	parent->nelem++;
 	
 	if (0 == (base[n] = (toml_array_t*) CALLOC(1, sizeof(*base[n])))) {
 		e_outofmemory(ctx, FLINE);
 		return 0;
 	}
 
-	return parent->u.arr[parent->nelem++];
+	return parent->u.arr[n];
 }
 
 /* Create a table in an array 
@@ -824,7 +847,7 @@ static toml_table_t* create_table_in_array(context_t* ctx,
 {
 	int n = parent->nelem;
 	toml_table_t** base;
-	if (0 == (base = (toml_table_t**) REALLOC(parent->u.tab, (n+1) * sizeof(*base)))) {
+	if (0 == (base = (toml_table_t**) expand_ptrarr((void**)parent->u.tab, n))) {
 		e_outofmemory(ctx, FLINE);
 		return 0;
 	}
@@ -943,7 +966,7 @@ static int parse_array(context_t* ctx, toml_array_t* arr)
 					return e_syntax(ctx, ctx->tok.lineno, "a string array can only contain strings");
 
 				/* make a new value in array */
-				char** tmp = (char**) REALLOC(arr->u.val, (arr->nelem+1) * sizeof(*tmp));
+				char** tmp = (char**) expand_ptrarr((void**)arr->u.val, arr->nelem);
 				if (!tmp) 
 					return e_outofmemory(ctx, FLINE);
 				
@@ -1179,7 +1202,7 @@ static int walk_tabpath(context_t* ctx)
 		default:
 			{ /* Not found. Let's create an implicit table. */
 				int n = curtab->ntab;
-				toml_table_t** base = (toml_table_t**) REALLOC(curtab->tab, (n+1) * sizeof(*base));
+				toml_table_t** base = (toml_table_t**) expand_ptrarr((void**)curtab->tab, n);
 				if (0 == base) 
 					return e_outofmemory(ctx, FLINE);
 
@@ -1263,7 +1286,7 @@ static int parse_select(context_t* ctx)
 		toml_table_t* dest;
 		{
 			int n = arr->nelem;
-			toml_table_t** base = REALLOC(arr->u.tab, (n+1) * sizeof(*base));
+			toml_table_t** base = (toml_table_t**) expand_ptrarr((void**)arr->u.tab, n);
 			if (0 == base) 
 				return e_outofmemory(ctx, FLINE);
 
@@ -1385,26 +1408,21 @@ toml_table_t* toml_parse_file(FILE* fp,
 	char* buf = 0;
 	int off = 0;
 
-	/* prime the buf[] */
-	bufsz = 1000;
-	if (! (buf = MALLOC(bufsz + 1))) {
-		snprintf(errbuf, errbufsz, "out of memory");
-		return 0;
-	}
-
 	/* read from fp into buf */
 	while (! feof(fp)) {
-		bufsz += 1000;
-	
-		/* Allocate 1 extra byte because we will tag on a NUL */
-		char* x = REALLOC(buf, bufsz + 1);
-		if (!x) {
-			snprintf(errbuf, errbufsz, "out of memory");
-			xfree(buf);
-			return 0;
-		}
-		buf = x;
 
+		if (off == bufsz) {
+			int xsz = bufsz + 1000;
+			char* x = expand(buf, bufsz, xsz);
+			if (!x) {
+				snprintf(errbuf, errbufsz, "out of memory");
+				xfree(buf);
+				return 0;
+			}
+			buf = x;
+			bufsz = xsz;
+		}
+	
 		errno = 0;
 		int n = fread(buf + off, 1, bufsz - off, fp);
 		if (ferror(fp)) {
@@ -1417,7 +1435,18 @@ toml_table_t* toml_parse_file(FILE* fp,
 	}
 
 	/* tag on a NUL to cap the string */
-	buf[off] = 0; /* we accounted for this byte in the REALLOC() above. */
+	if (off == bufsz) {
+		int xsz = bufsz + 1;
+		char* x = expand(buf, bufsz, xsz);
+		if (!x) {
+			snprintf(errbuf, errbufsz, "out of memory");
+			xfree(buf);
+			return 0;
+		}
+		buf = x;
+		bufsz = xsz;
+	}
+	buf[off] = 0; 
 
 	/* parse it, cleanup and finish */
 	toml_table_t* ret = toml_parse(buf, errbuf, errbufsz);
