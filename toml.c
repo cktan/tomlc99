@@ -38,21 +38,28 @@
 
 static void* (*ppmalloc)(size_t) = malloc;
 static void (*ppfree)(void*) = free;
-static void* (*ppcalloc)(size_t, size_t) = calloc;
 
 void toml_set_memutil(void* (*xxmalloc)(size_t),
-					  void	(*xxfree)(void*),
-					  void* (*xxcalloc)(size_t, size_t))
+					  void	(*xxfree)(void*))
 {
 	if (xxmalloc) ppmalloc = xxmalloc;
 	if (xxfree) ppfree = xxfree;
-	if (xxcalloc) ppcalloc = xxcalloc;
 }
 
 
 #define MALLOC(a)	  ppmalloc(a)
 #define FREE(a)		  ppfree(a)
-#define CALLOC(a,b)	  ppcalloc(a,b)
+
+static void* CALLOC(size_t nmemb, size_t sz)
+{
+	int nb = sz * nmemb;
+	void* p = MALLOC(nb);
+	if (p) {
+		memset(p, 0, nb);
+	}
+	return p;
+}
+
 
 static char* STRDUP(const char* s)
 {
@@ -382,22 +389,22 @@ static int e_keyexists(context_t* ctx, int lineno)
 
 static void* expand(void* p, int sz, int newsz)
 {
-	void* s = malloc(newsz);
+	void* s = MALLOC(newsz);
 	if (!s) return 0;
 	
 	memcpy(s, p, sz);
-	free(p);
+	FREE(p);
 	return s;
 }
 
 static void** expand_ptrarr(void** p, int n)
 {
-	void** s = malloc((n+1) * sizeof(void*));
+	void** s = MALLOC((n+1) * sizeof(void*));
 	if (!s) return 0;
 
 	s[n] = 0;
 	memcpy(s, p, n * sizeof(void*));
-	free(p);
+	FREE(p);
 	return s;
 }
 
@@ -1047,8 +1054,8 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 	token_t key = ctx->tok;
 	if (eat_token(ctx, STRING, 1, FLINE)) return -1;
 	
-	if (ctx->tok.tok == DOT) {
-		/* handle inline dotted key. 
+	if (ctx->tok.tok == DOT) {	
+	/* handle inline dotted key. 
 		   e.g. 
 		   physical.color = "orange"
 		   physical.shape = "round"
