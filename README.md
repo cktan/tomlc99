@@ -160,6 +160,10 @@ if (host.ok) {
 A normal *make* suffices. Alternately, you can also simply include the
 `toml.c` and `toml.h` files in your project.
 
+## Install
+
+Invoking `make install` will install the header file in /usr/local/include and library files in /usr/local/lib. Alternatively, specify `make install prefix=/a/file/path` to install into /a/file/path/include and /a/file/path/lib/. 
+
 ## Testing
 
 To test against the standard test set provided by BurntSushi/toml-test:
