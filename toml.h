@@ -41,9 +41,6 @@ typedef struct toml_table_t toml_table_t;
 typedef struct toml_array_t toml_array_t;
 typedef struct toml_access_t toml_access_t;
 
-/* A raw value, must be processed by toml_rto* before using. */
-typedef const char* toml_raw_t;
-
 /* Parse a file. Return a table on success, or 0 otherwise. 
  * Caller must toml_free(the-return-value) after use.
  */
@@ -59,68 +56,12 @@ TOML_EXTERN toml_table_t* toml_parse(char* conf, /* NUL terminated, please. */
 									 char* errbuf,
 									 int errbufsz);
 
-/* Free the table returned by toml_parse() or toml_parse_file(). */
+/* Free the table returned by toml_parse() or toml_parse_file(). Once 
+ * this function is called, any handles accessed through this tab 
+ * directly or indirectly are no longer valid.
+ */
 TOML_EXTERN void toml_free(toml_table_t* tab);
 
-/* Retrieve the key in table at keyidx. Return 0 if out of range. */
-TOML_EXTERN const char* toml_key_in(const toml_table_t* tab, int keyidx);
-
-/* Lookup table by key. Return the element or 0 if not found. */
-TOML_EXTERN toml_raw_t toml_raw_in(const toml_table_t* tab, const char* key);
-TOML_EXTERN toml_array_t* toml_array_in(const toml_table_t* tab,
-										const char* key);
-TOML_EXTERN toml_table_t* toml_table_in(const toml_table_t* tab,
-										const char* key);
-
-/* Return the array kind: 't'able, 'a'rray, 'v'alue */
-TOML_EXTERN char toml_array_kind(const toml_array_t* arr);
-
-/* For array kind 'v'alue, return the type of values 
-   i:int, d:double, b:bool, s:string, t:time, D:date, T:timestamp
-   0 if unknown
-*/
-TOML_EXTERN char toml_array_type(const toml_array_t* arr);
-
-
-/* Return the number of elements in the array */
-TOML_EXTERN int toml_array_nelem(const toml_array_t* arr);
-
-/* Return the key of an array */
-TOML_EXTERN const char* toml_array_key(const toml_array_t* arr);
-
-/* Return the number of key-values in a table */
-TOML_EXTERN int toml_table_nkval(const toml_table_t* tab);
-
-/* Return the number of arrays in a table */
-TOML_EXTERN int toml_table_narr(const toml_table_t* tab);
-
-/* Return the number of sub-tables in a table */
-TOML_EXTERN int toml_table_ntab(const toml_table_t* tab);
-
-/* Return the key of a table*/
-TOML_EXTERN const char* toml_table_key(const toml_table_t* tab);
-
-/* Deref array by index. Return the element at idx or 0 if out of range. */
-TOML_EXTERN toml_raw_t toml_raw_at(const toml_array_t* arr, int idx);
-TOML_EXTERN toml_array_t* toml_array_at(const toml_array_t* arr, int idx);
-TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
-
-/* Raw to String. Caller must call free(ret) after use. 
- * Return 0 on success, -1 otherwise.
- */
-TOML_EXTERN int toml_rtos(toml_raw_t s, char** ret);
-
-/* Raw to Boolean. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtob(toml_raw_t s, int* ret);
-
-/* Raw to Integer. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtoi(toml_raw_t s, int64_t* ret);
-
-/* Raw to Double. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtod(toml_raw_t s, double* ret);
-
-/* Same as toml_rtod, but return the sanitized double in string form as well */
-TOML_EXTERN int toml_rtod_ex(toml_raw_t s, double* ret, char* buf, int buflen);
 
 /* Timestamp types. The year, month, day, hour, minute, second, z 
  * fields may be NULL if they are not relevant. e.g. In a DATE
@@ -137,10 +78,10 @@ struct toml_timestamp_t {
 	char* z;
 };
 
-/* Raw to Timestamp. Return 0 on success, -1 otherwise. */
-TOML_EXTERN int toml_rtots(toml_raw_t s, toml_timestamp_t* ret);
 
-/* Enhanced access methods */
+/*-----------------------------------------------------------------
+ *  Enhanced access methods 
+ */
 struct toml_access_t {
 	int ok;
 	union {
@@ -151,27 +92,84 @@ struct toml_access_t {
 		toml_timestamp_t ts; 
 	} u;
 };
+
+/* on arrays: */
+/* ... retrieve size of array. */
+TOML_EXTERN int toml_array_nelem(const toml_array_t* arr);
+/* ... retrieve values using index. */
 TOML_EXTERN toml_access_t toml_string_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_access_t toml_bool_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_access_t toml_int_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_access_t toml_double_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_access_t toml_timestamp_at(const toml_array_t* arr, int idx);
+/* ... retrieve array or table using index. */
+TOML_EXTERN toml_array_t* toml_array_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
 
+/* on tables: */
+/* ... retrieve the key in table at keyidx. Return 0 if out of range. */
+TOML_EXTERN const char* toml_key_in(const toml_table_t* tab, int keyidx);
+/* ... retrieve values using key. */
 TOML_EXTERN toml_access_t toml_string_in(const toml_table_t* arr, const char* key);
 TOML_EXTERN toml_access_t toml_bool_in(const toml_table_t* arr, const char* key);
 TOML_EXTERN toml_access_t toml_int_in(const toml_table_t* arr, const char* key);
 TOML_EXTERN toml_access_t toml_double_in(const toml_table_t* arr, const char* key);
 TOML_EXTERN toml_access_t toml_timestamp_in(const toml_table_t* arr, const char* key);
+/* .. retrieve array or table using key. */
+TOML_EXTERN toml_array_t* toml_array_in(const toml_table_t* tab,
+										const char* key);
+TOML_EXTERN toml_table_t* toml_table_in(const toml_table_t* tab,
+										const char* key);
 
+/*-----------------------------------------------------------------
+ * lesser used 
+ */
+/* Return the array kind: 't'able, 'a'rray, 'v'alue */
+TOML_EXTERN char toml_array_kind(const toml_array_t* arr);
 
-/* misc */
+/* For array kind 'v'alue, return the type of values 
+   i:int, d:double, b:bool, s:string, t:time, D:date, T:timestamp
+   0 if unknown
+*/
+TOML_EXTERN char toml_array_type(const toml_array_t* arr);
+
+/* Return the key of an array */
+TOML_EXTERN const char* toml_array_key(const toml_array_t* arr);
+
+/* Return the number of key-values in a table */
+TOML_EXTERN int toml_table_nkval(const toml_table_t* tab);
+
+/* Return the number of arrays in a table */
+TOML_EXTERN int toml_table_narr(const toml_table_t* tab);
+
+/* Return the number of sub-tables in a table */
+TOML_EXTERN int toml_table_ntab(const toml_table_t* tab);
+
+/* Return the key of a table*/
+TOML_EXTERN const char* toml_table_key(const toml_table_t* tab);
+
+/*--------------------------------------------------------------
+ * misc 
+ */
 TOML_EXTERN int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret);
 TOML_EXTERN int toml_ucs_to_utf8(int64_t code, char buf[6]);
 TOML_EXTERN void toml_set_memutil(void* (*xxmalloc)(size_t),
 								  void	(*xxfree)(void*));
 
 
-
+/*--------------------------------------------------------------
+ *  deprecated 
+ */
+/* A raw value, must be processed by toml_rto* before using. */
+typedef const char* toml_raw_t;
+TOML_EXTERN toml_raw_t toml_raw_in(const toml_table_t* tab, const char* key);
+TOML_EXTERN toml_raw_t toml_raw_at(const toml_array_t* arr, int idx);
+TOML_EXTERN int toml_rtos(toml_raw_t s, char** ret);
+TOML_EXTERN int toml_rtob(toml_raw_t s, int* ret);
+TOML_EXTERN int toml_rtoi(toml_raw_t s, int64_t* ret);
+TOML_EXTERN int toml_rtod(toml_raw_t s, double* ret);
+TOML_EXTERN int toml_rtod_ex(toml_raw_t s, double* ret, char* buf, int buflen);
+TOML_EXTERN int toml_rtots(toml_raw_t s, toml_timestamp_t* ret);
 
 
 #endif /* TOML_H */
