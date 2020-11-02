@@ -128,7 +128,7 @@ To obtain the size of an array:
 int size = toml_array_nelem(arr);
 ```
 
-To obtain the content of an array, use an valid index and call one of these functions:
+To obtain the content of an array, use a valid index and call one of these functions:
 ```c
 toml_string_at(arr, idx);
 toml_bool_at(arr, idx);
