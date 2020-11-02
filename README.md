@@ -18,8 +18,7 @@ The steps for getting values from our file is usually :
 1. Parse the whole TOML file.
 2. Get a single table from the file.
 3. Find a value from the table.
-4. Convert that value to the appropriate type, i.e., string, int, etc.
-5. Then, free up that memory if needed.
+4. Then, free up that memory if needed.
 
 Below is an example of parsing the values from the example table.
 
@@ -59,42 +58,35 @@ if (0 == (server = toml_table_in(conf, "server"))) {
 ```
 
 3. Find a value from the table.
-4. Convert that value to the appropriate type (I.E. string, int).
 
 ```c
-toml_raw_t raw;
-char* host;
-int64_t port;
-
 /* Extract 'host' config value. */
-if (0 == (raw = toml_raw_in(server, "host"))) {
+toml_access_t host = toml_string_in(server, "host");
+if (!host.ok) {
+	toml_free(conf);
 	return handle_error();
 }
 
-/* Convert the raw value into a string. */
-if (toml_rtos(raw, &host)) {
+toml_access_t port = toml_int_in(server, "port");
+if (!port.ok) {
+	toml_free(conf);
+	free(host.u.s);
 	return handle_error();
 }
 
-/* Extract 'port' config value. */
-if (0 == (raw = toml_raw_in(server, "port"))) {
-	return handle_error();
-}
+printf("host %s\n", host.u.s);
+printf("port %d\n", port.u.i);
 
-/* Convert the raw value into an int. */
-if (toml_rtoi(raw, &port)) {
-	return handle_error();
-}
 ```
 
-5. Then, free up that memory if needed.
+4. Then, free up that memory if needed.
 
 ```c
 /* Use `toml_free` on the table returned from `toml_parse[_file]`. */
 toml_free(conf);
 
-/* Free any values returned from `toml_rto*`. */
-free(host);
+/* Free any string values returned from access functions. */
+free(host.u.s);
 ```
 
 ## Building

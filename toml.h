@@ -36,8 +36,10 @@
 #define TOML_EXTERN extern
 #endif
 
+typedef struct toml_timestamp_t toml_timestamp_t;
 typedef struct toml_table_t toml_table_t;
 typedef struct toml_array_t toml_array_t;
+typedef struct toml_access_t toml_access_t;
 
 /* A raw value, must be processed by toml_rto* before using. */
 typedef const char* toml_raw_t;
@@ -124,7 +126,6 @@ TOML_EXTERN int toml_rtod_ex(toml_raw_t s, double* ret, char* buf, int buflen);
  * fields may be NULL if they are not relevant. e.g. In a DATE
  * type, the hour, minute, second and z fields will be NULLs.
  */
-typedef struct toml_timestamp_t toml_timestamp_t;
 struct toml_timestamp_t {
 	struct { /* internal. do not use. */
 		int year, month, day;
@@ -139,10 +140,38 @@ struct toml_timestamp_t {
 /* Raw to Timestamp. Return 0 on success, -1 otherwise. */
 TOML_EXTERN int toml_rtots(toml_raw_t s, toml_timestamp_t* ret);
 
+/* Enhanced access methods */
+struct toml_access_t {
+	int ok;
+	union {
+		char*   s; /* string value. s must be freed after use */
+		int     b; /* bool value */
+		int64_t i; /* int value */
+		double  d; /* double value */
+		toml_timestamp_t ts; 
+	} u;
+};
+TOML_EXTERN toml_access_t toml_string_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_access_t toml_bool_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_access_t toml_int_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_access_t toml_double_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_access_t toml_timestamp_at(const toml_array_t* arr, int idx);
+
+TOML_EXTERN toml_access_t toml_string_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_access_t toml_bool_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_access_t toml_int_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_access_t toml_double_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_access_t toml_timestamp_in(const toml_table_t* arr, const char* key);
+
+
 /* misc */
 TOML_EXTERN int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret);
 TOML_EXTERN int toml_ucs_to_utf8(int64_t code, char buf[6]);
 TOML_EXTERN void toml_set_memutil(void* (*xxmalloc)(size_t),
 								  void	(*xxfree)(void*));
+
+
+
+
 
 #endif /* TOML_H */

@@ -30,6 +30,9 @@ toml_json: toml_json.c $(LIB)
 
 toml_cat: toml_cat.c $(LIB)
 
+
+tomlcpp.o: tomlcpp.cpp
+
 prefix ?= /usr/local
 
 install: all

@@ -2147,3 +2147,114 @@ int toml_rtos(toml_raw_t src, char** ret)
 	
 	return *ret ? 0 : -1;
 }
+
+
+toml_access_t toml_string_at(const toml_array_t* arr, int idx)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_at(arr, idx);
+	if (raw) {
+		ret.ok = (0 == toml_rtos(raw, &ret.u.s));
+	}
+	return ret;
+}
+
+toml_access_t toml_bool_at(const toml_array_t* arr, int idx)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_at(arr, idx);
+	if (raw) {
+		ret.ok = (0 == toml_rtob(raw, &ret.u.b));
+	}
+	return ret;
+}
+
+toml_access_t toml_int_at(const toml_array_t* arr, int idx)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_at(arr, idx);
+	if (raw) {
+		ret.ok = (0 == toml_rtoi(raw, &ret.u.i));
+	}
+	return ret;
+}	
+
+toml_access_t toml_double_at(const toml_array_t* arr, int idx)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_at(arr, idx);
+	if (raw) {
+		ret.ok = (0 == toml_rtod(raw, &ret.u.d));
+	}
+	return ret;
+}	
+
+toml_access_t toml_timestamp_at(const toml_array_t* arr, int idx)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_at(arr, idx);
+	if (raw) {
+		ret.ok = (0 == toml_rtots(raw, &ret.u.ts));
+	}
+	return ret;
+}	
+
+toml_access_t toml_string_in(const toml_table_t* arr, const char* key)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_in(arr, key);
+	if (raw) {
+		ret.ok = (0 == toml_rtos(raw, &ret.u.s));
+	}
+	return ret;
+}
+
+toml_access_t toml_bool_in(const toml_table_t* arr, const char* key)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_in(arr, key);
+	if (raw) {
+		ret.ok = (0 == toml_rtob(raw, &ret.u.b));
+	}
+	return ret;
+}
+
+toml_access_t toml_int_in(const toml_table_t* arr, const char* key)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_in(arr, key);
+	if (raw) {
+		ret.ok = (0 == toml_rtoi(raw, &ret.u.i));
+	}
+	return ret;
+}	
+
+toml_access_t toml_double_in(const toml_table_t* arr, const char* key)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_in(arr, key);
+	if (raw) {
+		ret.ok = (0 == toml_rtod(raw, &ret.u.d));
+	}
+	return ret;
+}	
+
+toml_access_t toml_timestamp_in(const toml_table_t* arr, const char* key)
+{
+	toml_access_t ret;
+	memset(&ret, 0, sizeof(ret));
+	toml_raw_t raw = toml_raw_in(arr, key);
+	if (raw) {
+		ret.ok = (0 == toml_rtots(raw, &ret.u.ts));
+	}
+	return ret;
+}	
