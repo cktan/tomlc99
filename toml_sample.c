@@ -34,13 +34,13 @@ int main()
 		exit(1);
 	}
 	
-	toml_access_t host = toml_string_in(server, "host");
+	toml_datum_t host = toml_string_in(server, "host");
 	if (!host.ok) {
 		fprintf(stderr, "ERROR: cannot read server.host.\n");
 		exit(1);
 	}
 	
-	toml_access_t port = toml_int_in(server, "port");
+	toml_datum_t port = toml_int_in(server, "port");
 	if (!port.ok) {
 		fprintf(stderr, "ERROR: cannot read server.port.\n");
 		exit(1);

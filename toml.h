@@ -39,7 +39,7 @@
 typedef struct toml_timestamp_t toml_timestamp_t;
 typedef struct toml_table_t toml_table_t;
 typedef struct toml_array_t toml_array_t;
-typedef struct toml_access_t toml_access_t;
+typedef struct toml_datum_t toml_datum_t;
 
 /* Parse a file. Return a table on success, or 0 otherwise. 
  * Caller must toml_free(the-return-value) after use.
@@ -82,7 +82,7 @@ struct toml_timestamp_t {
 /*-----------------------------------------------------------------
  *  Enhanced access methods 
  */
-struct toml_access_t {
+struct toml_datum_t {
 	int ok;
 	union {
 		char*   s; /* string value. s must be freed after use */
@@ -97,11 +97,11 @@ struct toml_access_t {
 /* ... retrieve size of array. */
 TOML_EXTERN int toml_array_nelem(const toml_array_t* arr);
 /* ... retrieve values using index. */
-TOML_EXTERN toml_access_t toml_string_at(const toml_array_t* arr, int idx);
-TOML_EXTERN toml_access_t toml_bool_at(const toml_array_t* arr, int idx);
-TOML_EXTERN toml_access_t toml_int_at(const toml_array_t* arr, int idx);
-TOML_EXTERN toml_access_t toml_double_at(const toml_array_t* arr, int idx);
-TOML_EXTERN toml_access_t toml_timestamp_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_datum_t toml_string_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_datum_t toml_bool_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_datum_t toml_int_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_datum_t toml_double_at(const toml_array_t* arr, int idx);
+TOML_EXTERN toml_datum_t toml_timestamp_at(const toml_array_t* arr, int idx);
 /* ... retrieve array or table using index. */
 TOML_EXTERN toml_array_t* toml_array_at(const toml_array_t* arr, int idx);
 TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
@@ -110,11 +110,11 @@ TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
 /* ... retrieve the key in table at keyidx. Return 0 if out of range. */
 TOML_EXTERN const char* toml_key_in(const toml_table_t* tab, int keyidx);
 /* ... retrieve values using key. */
-TOML_EXTERN toml_access_t toml_string_in(const toml_table_t* arr, const char* key);
-TOML_EXTERN toml_access_t toml_bool_in(const toml_table_t* arr, const char* key);
-TOML_EXTERN toml_access_t toml_int_in(const toml_table_t* arr, const char* key);
-TOML_EXTERN toml_access_t toml_double_in(const toml_table_t* arr, const char* key);
-TOML_EXTERN toml_access_t toml_timestamp_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_datum_t toml_string_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_datum_t toml_bool_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_datum_t toml_int_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_datum_t toml_double_in(const toml_table_t* arr, const char* key);
+TOML_EXTERN toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key);
 /* .. retrieve array or table using key. */
 TOML_EXTERN toml_array_t* toml_array_in(const toml_table_t* tab,
 										const char* key);

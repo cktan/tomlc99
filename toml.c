@@ -2149,9 +2149,9 @@ int toml_rtos(toml_raw_t src, char** ret)
 }
 
 
-toml_access_t toml_string_at(const toml_array_t* arr, int idx)
+toml_datum_t toml_string_at(const toml_array_t* arr, int idx)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_at(arr, idx);
 	if (raw) {
@@ -2160,9 +2160,9 @@ toml_access_t toml_string_at(const toml_array_t* arr, int idx)
 	return ret;
 }
 
-toml_access_t toml_bool_at(const toml_array_t* arr, int idx)
+toml_datum_t toml_bool_at(const toml_array_t* arr, int idx)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_at(arr, idx);
 	if (raw) {
@@ -2171,9 +2171,9 @@ toml_access_t toml_bool_at(const toml_array_t* arr, int idx)
 	return ret;
 }
 
-toml_access_t toml_int_at(const toml_array_t* arr, int idx)
+toml_datum_t toml_int_at(const toml_array_t* arr, int idx)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_at(arr, idx);
 	if (raw) {
@@ -2182,9 +2182,9 @@ toml_access_t toml_int_at(const toml_array_t* arr, int idx)
 	return ret;
 }	
 
-toml_access_t toml_double_at(const toml_array_t* arr, int idx)
+toml_datum_t toml_double_at(const toml_array_t* arr, int idx)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_at(arr, idx);
 	if (raw) {
@@ -2193,9 +2193,9 @@ toml_access_t toml_double_at(const toml_array_t* arr, int idx)
 	return ret;
 }	
 
-toml_access_t toml_timestamp_at(const toml_array_t* arr, int idx)
+toml_datum_t toml_timestamp_at(const toml_array_t* arr, int idx)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_at(arr, idx);
 	if (raw) {
@@ -2204,9 +2204,9 @@ toml_access_t toml_timestamp_at(const toml_array_t* arr, int idx)
 	return ret;
 }	
 
-toml_access_t toml_string_in(const toml_table_t* arr, const char* key)
+toml_datum_t toml_string_in(const toml_table_t* arr, const char* key)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_in(arr, key);
 	if (raw) {
@@ -2215,9 +2215,9 @@ toml_access_t toml_string_in(const toml_table_t* arr, const char* key)
 	return ret;
 }
 
-toml_access_t toml_bool_in(const toml_table_t* arr, const char* key)
+toml_datum_t toml_bool_in(const toml_table_t* arr, const char* key)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_in(arr, key);
 	if (raw) {
@@ -2226,9 +2226,9 @@ toml_access_t toml_bool_in(const toml_table_t* arr, const char* key)
 	return ret;
 }
 
-toml_access_t toml_int_in(const toml_table_t* arr, const char* key)
+toml_datum_t toml_int_in(const toml_table_t* arr, const char* key)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_in(arr, key);
 	if (raw) {
@@ -2237,9 +2237,9 @@ toml_access_t toml_int_in(const toml_table_t* arr, const char* key)
 	return ret;
 }	
 
-toml_access_t toml_double_in(const toml_table_t* arr, const char* key)
+toml_datum_t toml_double_in(const toml_table_t* arr, const char* key)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_in(arr, key);
 	if (raw) {
@@ -2248,9 +2248,9 @@ toml_access_t toml_double_in(const toml_table_t* arr, const char* key)
 	return ret;
 }	
 
-toml_access_t toml_timestamp_in(const toml_table_t* arr, const char* key)
+toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key)
 {
-	toml_access_t ret;
+	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_in(arr, key);
 	if (raw) {
