@@ -89,6 +89,32 @@ toml_free(conf);
 free(host.u.s);
 ```
 
+### Accessing Table Content
+
+Tables are dictionaries where lookups are done using string keys. In
+general, all access methods on tables are named `toml_*_in(...)`.
+
+Keys in tables can be iterrogated using a key index:
+
+```c
+toml_table_t* tab = toml_parse_file(...);
+for (int i = 0; ; i++) {
+    const char* key = toml_key_in(tab, i);
+    if (!key) break;
+    printf("key %d: %s\n", i, key);
+}
+```
+
+Once you know a key and its content type, you can obtain its content in the table by one of these methods:
+```c
+toml_string_in(tab, key);
+toml_bool_in(tab, key);
+toml_int_in(tab, key);
+toml_double_in(tab, key);
+toml_timestamp_in(tab, key);
+```
+
+
 ## Building
 
 A normal *make* suffices. Alternately, you can also simply include the
