@@ -31,18 +31,16 @@ FILE* fp;
 toml_table_t* conf;
 char errbuf[200];
 
-/* Open the file. */
+/* Open the file and parse content */
 if (0 == (fp = fopen("path/to/file.toml", "r"))) {
 	return handle_error();
 }
-
-/* Run the file through the parser. */
 conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
+fclose(fp);      
 if (0 == conf) {
 	return handle_error();
 }
 
-fclose(fp);
 
 /* Alternatively, use `toml_parse` which takes a string rather than a file. */
 conf = toml_parse("A null terminated string that is TOML\0", errbuf, sizeof(errbuf));
