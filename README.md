@@ -155,14 +155,16 @@ if (host.ok) {
 }
 ```
 
-## Building
+## Building and installing
 
-A normal *make* suffices. Alternately, you can also simply include the
+A normal *make* suffices. You can also simply include the
 `toml.c` and `toml.h` files in your project.
 
-## Install
+Invoking `make install` will install the header file in
+/usr/local/include and library files in /usr/local/lib.
 
-Invoking `make install` will install the header file in /usr/local/include and library files in /usr/local/lib. Alternatively, specify `make install prefix=/a/file/path` to install into /a/file/path/include and /a/file/path/lib/. 
+Alternatively, specify `make install prefix=/a/file/path` to install into
+/a/file/path/include and /a/file/path/lib/.
 
 ## Testing
 
