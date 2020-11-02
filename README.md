@@ -61,13 +61,13 @@ if (0 == (server = toml_table_in(conf, "server"))) {
 
 ```c
 /* Extract 'host' config value. */
-toml_access_t host = toml_string_in(server, "host");
+toml_datum_t host = toml_string_in(server, "host");
 if (!host.ok) {
 	toml_free(conf);
 	return handle_error();
 }
 
-toml_access_t port = toml_int_in(server, "port");
+toml_datum_t port = toml_int_in(server, "port");
 if (!port.ok) {
 	toml_free(conf);
 	free(host.u.s);
@@ -139,16 +139,16 @@ toml_table_at(arr, idx);
 toml_array_at(arr, idx);
 ```
 
-#### toml_access_t
+#### toml_datum_t
 
-Some `toml_*_at` and `toml_*_in` functions return a toml_access_t
+Some `toml_*_at` and `toml_*_in` functions return a toml_datum_t
 structure. The `ok` flag in the structure indicates if the function
 call was successful. If so, you may proceed to read the value
 corresponding to the type of the call.
 
 For example:
 ```
-toml_access_t host = toml_string_in(tab, "host");
+toml_datum_t host = toml_string_in(tab, "host");
 if (host.ok) {
 	printf("host: %s\n", host.u.s);
 	free(host.u.s);   /* FREE applies to string type only */
