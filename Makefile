@@ -1,7 +1,7 @@
 HFILES = toml.h
 CFILES = toml.c
 OBJ = $(CFILES:.c=.o) 
-EXEC = toml_json toml_cat
+EXEC = toml_json toml_cat toml_sample
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
 LIB = libtoml.a
@@ -29,6 +29,8 @@ libtoml.so: toml.o
 toml_json: toml_json.c $(LIB)
 
 toml_cat: toml_cat.c $(LIB)
+
+toml_sample: toml_sample.c $(LIB)
 
 
 tomlcpp.o: tomlcpp.cpp
