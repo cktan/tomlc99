@@ -2,6 +2,8 @@
 
 TOML in c99; v1.0 compliant.
 
+If you are looking for a C++ library, you might try this wrapper: [https://github.com/cktan/tomlcpp](https://github.com/cktan/tomlcpp).
+
 ## Usage
 
 Please see the `toml.h` file for details. What follows is a simple example that
