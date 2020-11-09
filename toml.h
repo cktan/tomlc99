@@ -85,11 +85,11 @@ struct toml_timestamp_t {
 struct toml_datum_t {
 	int ok;
 	union {
+		toml_timestamp_t* ts; /* ts must be freed after use */
 		char*   s; /* string value. s must be freed after use */
 		int     b; /* bool value */
 		int64_t i; /* int value */
 		double  d; /* double value */
-		toml_timestamp_t ts; 
 	} u;
 };
 

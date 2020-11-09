@@ -2195,11 +2195,18 @@ toml_datum_t toml_double_at(const toml_array_t* arr, int idx)
 
 toml_datum_t toml_timestamp_at(const toml_array_t* arr, int idx)
 {
+	toml_timestamp_t ts;
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_at(arr, idx);
 	if (raw) {
-		ret.ok = (0 == toml_rtots(raw, &ret.u.ts));
+		ret.ok = (0 == toml_rtots(raw, &ts));
+		if (ret.ok) {
+			ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
+			if (ret.ok) {
+				*ret.u.ts = ts;
+			}
+		}
 	}
 	return ret;
 }	
@@ -2250,11 +2257,18 @@ toml_datum_t toml_double_in(const toml_table_t* arr, const char* key)
 
 toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key)
 {
+	toml_timestamp_t ts;
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
 	toml_raw_t raw = toml_raw_in(arr, key);
 	if (raw) {
-		ret.ok = (0 == toml_rtots(raw, &ret.u.ts));
+		ret.ok = (0 == toml_rtots(raw, &ts));
+		if (ret.ok) {
+			ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
+			if (ret.ok) {
+				*ret.u.ts = ts;
+			}
+		}
 	}
 	return ret;
 }	
