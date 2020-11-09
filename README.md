@@ -97,7 +97,7 @@ free(host.u.s);
 TOML tables are dictionaries where lookups are done using string keys. In
 general, all access methods on tables are named `toml_*_in(...)`.
 
-Keys in tables can be iterrogated using a key index:
+Keys in tables can be interrogated using an integer index:
 
 ```c
 toml_table_t* tab = toml_parse_file(...);
@@ -108,7 +108,7 @@ for (int i = 0; ; i++) {
 }
 ```
 
-Once you know a key and its content type, you can obtain its content in the table by one of these methods:
+Once you know a key and its content type, retrievals can be done with one of these methods:
 ```c
 toml_string_in(tab, key);
 toml_bool_in(tab, key);
@@ -144,7 +144,7 @@ toml_array_at(arr, idx);
 Some `toml_*_at` and `toml_*_in` functions return a toml_datum_t
 structure. The `ok` flag in the structure indicates if the function
 call was successful. If so, you may proceed to read the value
-corresponding to the type of the call.
+corresponding to the type of the content.
 
 For example:
 ```
