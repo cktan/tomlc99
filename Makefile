@@ -33,8 +33,6 @@ toml_cat: toml_cat.c $(LIB)
 toml_sample: toml_sample.c $(LIB)
 
 
-tomlcpp.o: tomlcpp.cpp
-
 prefix ?= /usr/local
 
 install: all
