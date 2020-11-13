@@ -151,7 +151,7 @@ For example:
 toml_datum_t host = toml_string_in(tab, "host");
 if (host.ok) {
 	printf("host: %s\n", host.u.s);
-	free(host.u.s);   /* FREE applies to string type only */
+	free(host.u.s);   /* FREE applies to string and timestamp types only */
 }
 ```
 
