@@ -155,7 +155,7 @@ if (host.ok) {
 }
 ```
 
-**IMPORTANT: if the accessed value is a string or a timestamp, you must call `free(datum.u.s)` or `free(datum.u.ts)` respectively after usage. **
+** IMPORTANT: if the accessed value is a string or a timestamp, you must call `free(datum.u.s)` or `free(datum.u.ts)` respectively after usage. **
 
 ## Building and installing
 
