@@ -155,6 +155,9 @@ if (host.ok) {
 }
 ```
 
+*IMPORTANT:* If the accessed value is a string or a timestamp, you must call 
+`free(datum.u.s)` or `free(datum.u.ts)` respectively after usage. 
+
 ## Building and installing
 
 A normal *make* suffices. You can also simply include the
