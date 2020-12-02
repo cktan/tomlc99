@@ -97,18 +97,8 @@ free(host.u.s);
 TOML tables are dictionaries where lookups are done using string keys. In
 general, all access methods on tables are named `toml_*_in(...)`.
 
-Keys in tables can be interrogated using an integer index:
-
-```c
-toml_table_t* tab = toml_parse_file(...);
-for (int i = 0; ; i++) {
-    const char* key = toml_key_in(tab, i);
-    if (!key) break;
-    printf("key %d: %s\n", i, key);
-}
-```
-
-Once you know a key and its content type, retrievals can be done with one of these methods:
+In the normal case, you know the key and its content type, and retrievals can be done
+using one of these functions:
 ```c
 toml_string_in(tab, key);
 toml_bool_in(tab, key);
@@ -119,9 +109,19 @@ toml_table_in(tab, key);
 toml_array_in(tab, key);
 ```
 
+You can also interrogate the keys in a table using an integer index:
+```c
+toml_table_t* tab = toml_parse_file(...);
+for (int i = 0; ; i++) {
+    const char* key = toml_key_in(tab, i);
+    if (!key) break;
+    printf("key %d: %s\n", i, key);
+}
+```
+
 #### Accessing Array Content
 
-TOML arrays can be deref-ed using integer values. In general, all access methods on arrays are named `toml_*_at()`.
+TOML arrays can be deref-ed using integer indices. In general, all access methods on arrays are named `toml_*_at()`.
 
 To obtain the size of an array:
 ```c
