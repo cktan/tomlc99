@@ -2153,10 +2153,7 @@ toml_datum_t toml_string_at(const toml_array_t* arr, int idx)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_at(arr, idx);
-	if (raw) {
-		ret.ok = (0 == toml_rtos(raw, &ret.u.s));
-	}
+	ret.ok = (0 == toml_rtos(toml_raw_at(arr, idx), &ret.u.s));
 	return ret;
 }
 
@@ -2164,10 +2161,7 @@ toml_datum_t toml_bool_at(const toml_array_t* arr, int idx)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_at(arr, idx);
-	if (raw) {
-		ret.ok = (0 == toml_rtob(raw, &ret.u.b));
-	}
+	ret.ok = (0 == toml_rtob(toml_raw_at(arr, idx), &ret.u.b));
 	return ret;
 }
 
@@ -2175,10 +2169,7 @@ toml_datum_t toml_int_at(const toml_array_t* arr, int idx)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_at(arr, idx);
-	if (raw) {
-		ret.ok = (0 == toml_rtoi(raw, &ret.u.i));
-	}
+	ret.ok = (0 == toml_rtoi(toml_raw_at(arr, idx), &ret.u.i));
 	return ret;
 }	
 
@@ -2186,30 +2177,24 @@ toml_datum_t toml_double_at(const toml_array_t* arr, int idx)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_at(arr, idx);
-	if (raw) {
-		ret.ok = (0 == toml_rtod(raw, &ret.u.d));
-	}
+	ret.ok = (0 == toml_rtod(toml_raw_at(arr, idx), &ret.u.d));
 	return ret;
-}	
+}
 
 toml_datum_t toml_timestamp_at(const toml_array_t* arr, int idx)
 {
 	toml_timestamp_t ts;
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_at(arr, idx);
-	if (raw) {
-		ret.ok = (0 == toml_rtots(raw, &ts));
+	ret.ok = (0 == toml_rtots(toml_raw_at(arr, idx), &ts));
+	if (ret.ok) {
+		ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
 		if (ret.ok) {
-			ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
-			if (ret.ok) {
-				*ret.u.ts = ts;
-			}
+			*ret.u.ts = ts;
 		}
 	}
 	return ret;
-}	
+}
 
 toml_datum_t toml_string_in(const toml_table_t* arr, const char* key)
 {
@@ -2226,10 +2211,7 @@ toml_datum_t toml_bool_in(const toml_table_t* arr, const char* key)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_in(arr, key);
-	if (raw) {
-		ret.ok = (0 == toml_rtob(raw, &ret.u.b));
-	}
+	ret.ok = (0 == toml_rtob(toml_raw_in(arr, key), &ret.u.b));
 	return ret;
 }
 
@@ -2237,37 +2219,28 @@ toml_datum_t toml_int_in(const toml_table_t* arr, const char* key)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_in(arr, key);
-	if (raw) {
-		ret.ok = (0 == toml_rtoi(raw, &ret.u.i));
-	}
+	ret.ok = (0 == toml_rtoi(toml_raw_in(arr, key), &ret.u.i));
 	return ret;
-}	
+}
 
 toml_datum_t toml_double_in(const toml_table_t* arr, const char* key)
 {
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_in(arr, key);
-	if (raw) {
-		ret.ok = (0 == toml_rtod(raw, &ret.u.d));
-	}
+	ret.ok = (0 == toml_rtod(toml_raw_in(arr, key), &ret.u.d));
 	return ret;
-}	
+}
 
 toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key)
 {
 	toml_timestamp_t ts;
 	toml_datum_t ret;
 	memset(&ret, 0, sizeof(ret));
-	toml_raw_t raw = toml_raw_in(arr, key);
-	if (raw) {
-		ret.ok = (0 == toml_rtots(raw, &ts));
+	ret.ok = (0 == toml_rtots(toml_raw_in(arr, key), &ts));
+	if (ret.ok) {
+		ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
 		if (ret.ok) {
-			ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
-			if (ret.ok) {
-				*ret.u.ts = ts;
-			}
+			*ret.u.ts = ts;
 		}
 	}
 	return ret;
