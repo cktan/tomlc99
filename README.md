@@ -18,9 +18,9 @@ parses this config file:
 The steps for getting values from our file is usually :
 
 1. Parse the whole TOML file.
-2. Get a single table from the file.
+2. Traverse and locate a table in TOML.
 3. Find a value from the table.
-4. Then, free up that memory if needed.
+4. Free up allocated memory.
 
 Below is an example of parsing the values from the example table.
 
@@ -46,7 +46,7 @@ if (0 == conf) {
 conf = toml_parse("A null terminated string that is TOML\0", errbuf, sizeof(errbuf));
 ```
 
-2. Get a single table from the file.
+2. Traverse and locate a table in toml.
 
 ```c
 toml_table_t* server;
@@ -79,7 +79,7 @@ printf("port %d\n", port.u.i);
 
 ```
 
-4. Then, free up that memory if needed.
+4. Free up allocated memory.
 
 ```c
 /* Use `toml_free` on the table returned from `toml_parse[_file]`.
