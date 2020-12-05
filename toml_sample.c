@@ -4,49 +4,58 @@
 #include <stdlib.h>
 #include "toml.h"
 
-toml_table_t* load()
+static void fatal(const char* msg, const char* msg1)
+{
+	fprintf(stderr, "ERROR: %s%s\n", msg, msg1?msg1:"");
+	exit(1);
+}
+
+
+int main()
 {
 	FILE* fp;
 	char errbuf[200];
+
+	// 1. Read and parse toml file
 	fp = fopen("sample.toml", "r");
 	if (!fp) {
-		fprintf(stderr, "ERROR: cannot open sample.toml - %s\n", strerror(errno));
-		exit(1);
+		fatal("cannot open sample.toml - ", strerror(errno));
 	}
 
 	toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
 	fclose(fp);
 
 	if (!conf) {
-		fprintf(stderr, "ERROR: cannot parse - %s\n", errbuf);
-		exit(1);
+		fatal("cannot parse - ", errbuf);
 	}
-	
-	return conf;
-}
 
-int main()
-{
-	toml_table_t* conf = load();
+	// 2. Traverse to a table.
 	toml_table_t* server = toml_table_in(conf, "server");
 	if (!server) {
-		fprintf(stderr, "ERROR: missing [server]\n");
-		exit(1);
-	}
-	
-	toml_datum_t host = toml_string_in(server, "host");
-	if (!host.ok) {
-		fprintf(stderr, "ERROR: cannot read server.host.\n");
-		exit(1);
-	}
-	
-	toml_datum_t port = toml_int_in(server, "port");
-	if (!port.ok) {
-		fprintf(stderr, "ERROR: cannot read server.port.\n");
-		exit(1);
+		fatal("missing [server]", "");
 	}
 
-	printf("host: %s, port %d\n", host.u.s, (int)port.u.i);
+	// 3. Extract values
+	toml_datum_t host = toml_string_in(server, "host");
+	if (!host.ok) {
+		fatal("cannot read server.host", "");
+	}
+
+	toml_array_t* portarray = toml_array_in(server, "port");
+	if (!portarray) {
+		fatal("cannot read server.port", "");
+	}
+
+	printf("host: %s\n", host.u.s);
+	printf("port: ");
+	for (int i = 0; ; i++) {
+		toml_datum_t port = toml_int_at(portarray, i);
+		if (!port.ok) break;
+		printf("%d ", (int)port.u.i);
+	}
+	printf("\n");
+
+	// 4. Free memory
 	free(host.u.s);
 	toml_free(conf);
 	return 0;

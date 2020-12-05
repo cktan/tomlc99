@@ -4,6 +4,13 @@ TOML in c99; v1.0 compliant.
 
 If you are looking for a C++ library, you might try this wrapper: [https://github.com/cktan/tomlcpp](https://github.com/cktan/tomlcpp).
 
+* Compatible with [TOML v1.0.0-rc.3](https://toml.io/en/v1.0.0-rc.3).
+* Tested with multiple test suites, including
+[BurntSushi/toml-test](https://github.com/BurntSushi/toml-test) and
+[iarna/toml-spec-tests](https://github.com/iarna/toml-spec-tests).
+* Provides very simple and intuitive interface.
+
+
 ## Usage
 
 Please see the `toml.h` file for details. What follows is a simple example that
@@ -12,84 +19,81 @@ parses this config file:
 ```toml
 [server]
 	host = "www.example.com"
-	port = 80
+	port = [ 8080, 8181, 8282 ]
 ```
 
 The steps for getting values from our file is usually :
 
-1. Parse the whole TOML file.
-2. Get a single table from the file.
-3. Find a value from the table.
+1. Parse the TOML file.
+2. Traverse to a table.
+3. Extract values from the table.
 4. Then, free up that memory if needed.
 
 Below is an example of parsing the values from the example table.
 
-1. Parse the whole TOML file.
-
 ```c
-FILE* fp;
-toml_table_t* conf;
-char errbuf[200];
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <stdlib.h>
+#include "toml.h"
 
-/* Open the file and parse content */
-if (0 == (fp = fopen("path/to/file.toml", "r"))) {
-	return handle_error();
-}
-conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
-fclose(fp);      
-if (0 == conf) {
-	return handle_error();
+static void fatal(const char* msg, const char* msg1)
+{
+	fprintf(stderr, "ERROR: %s%s\n", msg, msg1?msg1:"");
+	exit(1);
 }
 
 
-/* Alternatively, use `toml_parse` which takes a string rather than a file. */
-conf = toml_parse("A null terminated string that is TOML\0", errbuf, sizeof(errbuf));
-```
+int main()
+{
+	FILE* fp;
+	char errbuf[200];
 
-2. Get a single table from the file.
+	// 1. Read and parse toml file
+	fp = fopen("sample.toml", "r");
+	if (!fp) {
+		fatal("cannot open sample.toml - ", strerror(errno));
+	}
 
-```c
-toml_table_t* server;
+	toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
+	fclose(fp);
 
-/* Locate the [server] table. */
-if (0 == (server = toml_table_in(conf, "server"))) {
-	return handle_error();
-}
-```
+	if (!conf) {
+		fatal("cannot parse - ", errbuf);
+	}
 
-3. Find a value from the table.
+	// 2. Traverse to a table.
+	toml_table_t* server = toml_table_in(conf, "server");
+	if (!server) {
+		fatal("missing [server]", "");
+	}
 
-```c
-/* Extract 'host' config value. */
-toml_datum_t host = toml_string_in(server, "host");
-if (!host.ok) {
-	toml_free(conf);
-	return handle_error();
-}
+	// 3. Extract values
+	toml_datum_t host = toml_string_in(server, "host");
+	if (!host.ok) {
+		fatal("cannot read server.host", "");
+	}
 
-toml_datum_t port = toml_int_in(server, "port");
-if (!port.ok) {
-	toml_free(conf);
+	toml_array_t* portarray = toml_array_in(server, "port");
+	if (!portarray) {
+		fatal("cannot read server.port", "");
+	}
+
+	printf("host: %s\n", host.u.s);
+	printf("port: ");
+	for (int i = 0; ; i++) {
+		toml_datum_t port = toml_int_at(portarray, i);
+		if (!port.ok) break;
+		printf("%d ", (int)port.u.i);
+	}
+	printf("\n");
+
+	// 4. Free memory
 	free(host.u.s);
-	return handle_error();
+	toml_free(conf);
+	return 0;
 }
-
-printf("host %s\n", host.u.s);
-printf("port %d\n", port.u.i);
-
-```
-
-4. Then, free up that memory if needed.
-
-```c
-/* Use `toml_free` on the table returned from `toml_parse[_file]`.
- * NOTE: you only need to `toml_free` the root table returned by `toml_parse[_file]`;
- * internal tables do not need to be freed.
- */
-toml_free(conf);
-
-/* Free any string values returned from access functions. */
-free(host.u.s);
 ```
 
 #### Accessing Table Content
