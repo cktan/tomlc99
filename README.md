@@ -25,9 +25,9 @@ parses this config file:
 The steps for getting values from our file is usually :
 
 1. Parse the TOML file.
-2. Traverse to a table.
+2. Traverse and locate a table in TOML.
 3. Extract values from the table.
-4. Then, free up that memory if needed.
+4. Free up allocated memory.
 
 Below is an example of parsing the values from the example table.
 
@@ -94,6 +94,7 @@ int main()
 	toml_free(conf);
 	return 0;
 }
+
 ```
 
 #### Accessing Table Content
@@ -166,11 +167,11 @@ if (host.ok) {
 A normal *make* suffices. You can also simply include the
 `toml.c` and `toml.h` files in your project.
 
-Invoking `make install` will install the header file in
-/usr/local/include and library files in /usr/local/lib.
+Invoking `make install` will install the header and library files into
+/usr/local/{include,lib}.
 
 Alternatively, specify `make install prefix=/a/file/path` to install into
-/a/file/path/include and /a/file/path/lib/.
+/a/file/path/{include,lib}.
 
 ## Testing
 
