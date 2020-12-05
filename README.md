@@ -100,7 +100,7 @@ int main()
 #### Accessing Table Content
 
 TOML tables are dictionaries where lookups are done using string keys. In
-general, all access methods on tables are named `toml_*_in(...)`.
+general, all access functions on tables are named `toml_*_in(...)`.
 
 In the normal case, you know the key and its content type, and retrievals can be done
 using one of these functions:
