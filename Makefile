@@ -1,6 +1,6 @@
 HFILES = toml.h
 CFILES = toml.c
-OBJ = $(CFILES:.c=.o) 
+OBJ = $(CFILES:.c=.o)
 EXEC = toml_json toml_cat toml_sample
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
@@ -43,3 +43,6 @@ install: all
 
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
+
+
+.PHONY: all clean install
