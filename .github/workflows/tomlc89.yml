@@ -24,18 +24,19 @@ jobs:
 
     #git checkout
     - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
   
     #before install dependencies
     - name: ubuntu dependencies
       #ubuntu dependencies
       if: matrix.os == 'ubuntu-latest'
       run: |
-        sudo apt-get -qq install cmake make golang git
+        sudo apt-get -qq install cmake make git
       #windows dependencies
     - name: windows dependencies
       if: matrix.os == 'windows-latest'
       run: |
-        choco install golang git -y
+        choco install git -y
       #git bash shell
       shell: bash
   
