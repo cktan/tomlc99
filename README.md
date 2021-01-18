@@ -1,4 +1,4 @@
-![Build Status](https://github.com/tonymmm1/tomlc89/workflows/tomlc89%20CI%20build/badge.svg?branch=github-actions)
+![Build Status](https://github.com/tonymmm1/tomlc89/workflows/tomlc89%20CI%20build/badge.svg?branch=master)
 
 # tomlc89
 Translated C99 to C89 for backwards compatibility. 
