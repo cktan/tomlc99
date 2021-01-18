@@ -30,12 +30,12 @@ jobs:
       #ubuntu dependencies
       if: matrix.os == 'ubuntu-latest'
       run: |
-        sudo apt-get -qq install cmake make golang
+        sudo apt-get -qq install cmake make golang git
       #windows dependencies
     - name: windows dependencies
       if: matrix.os == 'windows-latest'
       run: |
-        choco install golang -y
+        choco install golang git -y
       #git bash shell
       shell: bash
   
