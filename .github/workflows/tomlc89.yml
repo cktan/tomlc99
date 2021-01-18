@@ -58,7 +58,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -G "Visual Studio 16 2019 Win64" -A x64 ..
+        cmake -G "Visual Studio 16 2019" -A x64 ..
         /c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/MSBuild/Current/Bin/MSBuild.exe "tomlc89.sln" //p:Platform=x64 //p:Configuration=Release
         cd ../test1/
         bash build.sh
