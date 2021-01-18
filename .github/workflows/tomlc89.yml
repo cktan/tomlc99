@@ -21,6 +21,9 @@ jobs:
         include:
           - os: windows-latest
     steps:
+
+    #git checkout
+    - uses: actions/checkout@v2
   
     #before install dependencies
     - name: ubuntu dependencies
