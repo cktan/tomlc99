@@ -8,7 +8,7 @@ name: tomlc89 CI build
 
 on: 
   push:
-    branches: [ github-actionsth ]
+    branches: [ github-actions ]
 
 jobs:
   build:
@@ -21,9 +21,6 @@ jobs:
         include:
           - os: windows-latest
     steps:
-  
-    #git checkout
-    - uses: actions/checkout@v2
   
     #before install dependencies
     - name: ubuntu dependencies
