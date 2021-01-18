@@ -3,13 +3,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 mkdir -p $DIR/goworkspace
 export GOPATH=$DIR/goworkspace
-if [ "$OS" == "windows" ]
-then
-	/c/Go/bin/go.exe get github.com/BurntSushi/toml-test # install test suite	
-        /c/Go/bin/go.exe get github.com/BurntSushi/toml/cmd/toml-test-decoder # e.g., install my parser
-else
-	go get github.com/BurntSushi/toml-test # install test suite
-	go get github.com/BurntSushi/toml/cmd/toml-test-decoder # e.g., install my parser
-fi
+
+go get github.com/BurntSushi/toml-test # install test suite
+go get github.com/BurntSushi/toml/cmd/toml-test-decoder # e.g., install my parser
+
 cp $GOPATH/bin/* .
 
