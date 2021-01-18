@@ -1,0 +1,80 @@
+#3 build types 
+# - gcc under Ubuntu
+# - clang under Ubuntu
+# - visual studio under Windows
+#
+# Builds are set to use 2 threads per type
+name: tomlc89 CI build
+
+on: 
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      #matrix declaration
+      matrix:
+        os: [ubuntu-latest]
+        compiler: [gcc, clang]
+        include:
+          - os: windows-latest
+  steps:
+
+  #git checkout
+  - uses: actions/checkout@v2
+
+  #before install dependencies
+  - name: ubuntu dependencies
+    #ubuntu dependencies
+    if: matrix.os == 'ubuntu-latest'
+    run: |
+      sudo apt-get -qq install cmake make golang
+    #windows dependencies
+  - name: windows dependencies
+    if: matrix.os == 'windows-latest'
+    run: |
+      choco install golang -y
+    #git bash shell
+    shell: bash
+
+  #ubuntu
+  - name: ubuntu build & install
+    if: matrix.os == 'ubuntu-latest'
+    env:
+      OS: "linux"
+    run: |
+      mkdir build
+      cd build
+      cmake ..
+      make
+      cd ../test1/
+      bash build.sh
+      bash run.sh
+      cd $GITHUB_WORKSPACE
+      cd test2
+      bash build.sh
+      bash run.sh
+  #windows 
+  - name: windows build & install
+    if: matrix.os == 'windows-latest'
+    env:
+      OS: "windows"
+    run: |
+      cd $GITHUB_WORKSPACE/tomlc89
+      mkdir build
+      cd build
+      cmake -G "Visual Studio 16 2019 Win64" -A x64 ..
+      /c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/MSBuild/Current/Bin/MSBuild.exe "tomlc89.sln" //p:Platform=x64 //p:Configuration=Release
+      cd ../test1/
+      bash build.sh
+      bash run.sh
+      cd $GITHUB_WORKSPACE
+      cd test2/
+      bash build.sh
+      bash run.sh 
+    #git bash shell
+    shell: bash
+
+
