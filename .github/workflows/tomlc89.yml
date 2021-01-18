@@ -32,13 +32,6 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get -qq install cmake make git
-      #windows dependencies
-    - name: windows dependencies
-      if: matrix.os == 'windows-latest'
-      run: |
-        choco install git -y
-      #git bash shell
-      shell: bash
   
     #ubuntu
     - name: ubuntu build & install
@@ -63,7 +56,6 @@ jobs:
       env:
         OS: "windows"
       run: |
-        cd $GITHUB_WORKSPACE/tomlc89
         mkdir build
         cd build
         cmake -G "Visual Studio 16 2019 Win64" -A x64 ..
@@ -77,5 +69,3 @@ jobs:
         bash run.sh 
       #git bash shell
       shell: bash
-
-
