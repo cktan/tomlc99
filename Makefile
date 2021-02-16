@@ -4,8 +4,9 @@ OBJ = $(CFILES:.c=.o)
 EXEC = toml_json toml_cat toml_sample
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
+LIB_VERSION = 1.0
 LIB = libtoml.a
-LIB_SHARED = libtoml.so
+LIB_SHARED = libtoml.so.$(LIB_VERSION)
 
 # to compile for debug: make DEBUG=1
 # to compile for no debug: make
@@ -23,7 +24,7 @@ all: $(LIB) $(LIB_SHARED) $(EXEC)
 libtoml.a: toml.o
 	ar -rcs $@ $^
 
-libtoml.so: toml.o
+libtoml.so.$(LIB_VERSION): toml.o
 	$(CC) -shared -o $@ $^
 
 toml_json: toml_json.c $(LIB)
