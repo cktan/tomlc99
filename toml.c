@@ -1063,6 +1063,8 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 		toml_table_t* subtab = 0;
 		{
 			char* subtabstr = normalize_key(ctx, key);
+			if (!subtabstr) return -1;
+
 			subtab = toml_table_in(tab, subtabstr);
 			xfree(subtabstr);
 		}
