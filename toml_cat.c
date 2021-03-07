@@ -43,26 +43,16 @@ struct node_t {
 
 node_t stack[20];
 int stacktop = 0;
+int indent = 0;
 
-
-
-static void print_table_title(const char* arrname)
+static void prindent()
 {
-    int i;
-    printf("%s", arrname ? "[[" : "[");
-    for (i = 1; i < stacktop; i++) {
-		printf("%s", stack[i].key);
-		if (i + 1 < stacktop)
-			printf(".");
-    }
-    if (arrname)
-		printf(".%s]]\n", arrname);
-    else
-		printf("]\n");
+	for (int i = 0; i < indent; i++) printf("  ");
 }
 
 
-static void print_array_of_tables(toml_array_t* arr, const char* key);
+
+
 static void print_array(toml_array_t* arr);
 
 
@@ -74,41 +64,33 @@ static void print_table(toml_table_t* curtab)
     toml_array_t* arr;
     toml_table_t* tab;
 
-
     for (i = 0; 0 != (key = toml_key_in(curtab, i)); i++) {
 		if (0 != (raw = toml_raw_in(curtab, key))) {
-			printf("%s = %s\n", key, raw);
+			prindent();
+			printf("%s = %s,\n", key, raw);
 		} else if (0 != (arr = toml_array_in(curtab, key))) {
-			if (toml_array_kind(arr) == 't') {
-				print_array_of_tables(arr, key);
-			}
-			else {
-				printf("%s = [\n", key);
-				print_array(arr);
-				printf("    ]\n");
-			}
+			prindent();
+			printf("%s = [\n", key);
+			indent++;
+			print_array(arr);
+			indent--;
+			prindent();
+			printf("],\n");
 		} else if (0 != (tab = toml_table_in(curtab, key))) {
 			stack[stacktop].key = key;
 			stack[stacktop].tab = tab;
 			stacktop++;
-			print_table_title(0);
+			prindent();
+			printf("%s = {\n", key);
+			indent++;
 			print_table(tab);
+			indent--;
+			prindent();
+			printf("},\n");
 			stacktop--;
 		} else {
 			abort();
 		}
-    }
-}
-
-static void print_array_of_tables(toml_array_t* arr, const char* key)
-{
-    int i;
-    toml_table_t* tab;
-    printf("\n");
-    for (i = 0; 0 != (tab = toml_table_at(arr, i)); i++) {
-		print_table_title(key);
-		print_table(tab);
-		printf("\n");
     }
 }
 
@@ -118,35 +100,29 @@ static void print_array(toml_array_t* curarr)
     toml_array_t* arr;
     const char* raw;
     toml_table_t* tab;
-    int i;
+	const int n = toml_array_nelem(curarr);
 
-    switch (toml_array_kind(curarr)) {
-
-    case 'v':
-		for (i = 0; 0 != (raw = toml_raw_at(curarr, i)); i++) {
-			printf("  %d: %s,\n", i, raw);
-		}
-		break;
-
-    case 'a':
-		for (i = 0; 0 != (arr = toml_array_at(curarr, i)); i++) {
-			printf("  %d: \n", i);
+	for (int i = 0; i < n; i++) {
+		if (0 != (raw = toml_raw_at(curarr, i))) {
+			prindent();
+			printf("%s,\n", raw);
+		} else if (0 != (arr = toml_array_at(curarr, i))) {
+			prindent();
+			printf("[\n");
+			indent++;
 			print_array(arr);
-		}
-		break;
-
-    case 't':
-		for (i = 0; 0 != (tab = toml_table_at(curarr, i)); i++) {
+			indent--;
+			prindent();
+			printf("],\n");
+		} else if (0 != (tab = toml_table_at(curarr, i))) {
+			prindent();
+			printf("{\n");
+			indent++;
 			print_table(tab);
+			indent--;
+			prindent();
+			printf("},\n");
 		}
-		printf("\n");
-		break;
-
-    case '\0':
-		break;
-
-    default:
-		abort();
     }
 }
 
@@ -166,7 +142,11 @@ static void cat(FILE* fp)
     stack[stacktop].tab = tab;
     stack[stacktop].key = "";
     stacktop++;
+	printf("{\n");
+	indent++;
     print_table(tab);
+	indent--;
+	printf("}\n");
     stacktop--;
 
     toml_free(tab);

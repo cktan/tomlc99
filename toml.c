@@ -1790,11 +1790,7 @@ toml_table_t* toml_table_in(const toml_table_t* tab, const char* key)
 
 toml_raw_t toml_raw_at(const toml_array_t* arr, int idx)
 {
-	if (arr->kind != 'v')
-		return 0;
-	if (! (0 <= idx && idx < arr->nitem))
-		return 0;
-	return arr->item[idx].val;
+	return (0 <= idx && idx < arr->nitem) ? arr->item[idx].val : 0;
 }
 
 char toml_array_kind(const toml_array_t* arr)
@@ -1846,16 +1842,12 @@ const char* toml_table_key(const toml_table_t* tab)
 
 toml_array_t* toml_array_at(const toml_array_t* arr, int idx)
 {
-	if (! (0 <= idx && idx < arr->nitem))
-		return 0;
-	return arr->item[idx].arr;
+	return (0 <= idx && idx < arr->nitem) ? arr->item[idx].arr : 0;
 }
 
 toml_table_t* toml_table_at(const toml_array_t* arr, int idx)
 {
-	if (! (0 <= idx && idx < arr->nitem))
-		return 0;
-	return arr->item[idx].tab;
+	return (0 <= idx && idx < arr->nitem) ? arr->item[idx].tab : 0;
 }
 
 
