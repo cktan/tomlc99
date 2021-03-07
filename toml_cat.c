@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <assert.h>
+#include <inttypes.h>
 #include "toml.h"
 
 typedef struct node_t node_t;
@@ -58,17 +59,15 @@ static void print_array(toml_array_t* arr);
 
 static void print_table(toml_table_t* curtab)
 {
+	toml_datum_t d;
     int i;
     const char* key;
-    const char* raw;
     toml_array_t* arr;
     toml_table_t* tab;
 
     for (i = 0; 0 != (key = toml_key_in(curtab, i)); i++) {
-		if (0 != (raw = toml_raw_in(curtab, key))) {
-			prindent();
-			printf("%s = %s,\n", key, raw);
-		} else if (0 != (arr = toml_array_in(curtab, key))) {
+
+		if (0 != (arr = toml_array_in(curtab, key))) {
 			prindent();
 			printf("%s = [\n", key);
 			indent++;
@@ -76,7 +75,10 @@ static void print_table(toml_table_t* curtab)
 			indent--;
 			prindent();
 			printf("],\n");
-		} else if (0 != (tab = toml_table_in(curtab, key))) {
+			continue;
+		}
+
+		if (0 != (tab = toml_table_in(curtab, key))) {
 			stack[stacktop].key = key;
 			stack[stacktop].tab = tab;
 			stacktop++;
@@ -88,25 +90,61 @@ static void print_table(toml_table_t* curtab)
 			prindent();
 			printf("},\n");
 			stacktop--;
-		} else {
-			abort();
+			continue;
 		}
+
+		d = toml_string_in(curtab, key);
+		if (d.ok) {
+			prindent();
+			printf("%s = %s,\n", key, toml_raw_in(curtab, key));
+			free(d.u.s);
+			continue;
+		}
+
+		d = toml_bool_in(curtab, key);
+		if (d.ok) {
+			prindent();
+			printf("%s = %s,\n", key, d.u.b ? "true" : "false");
+			continue;
+		}
+
+		d = toml_int_in(curtab, key);
+		if (d.ok) {
+			prindent();
+			printf("%s = %" PRId64 ",\n", key, d.u.i);
+			continue;
+		}
+
+		d = toml_double_in(curtab, key);
+		if (d.ok) {
+			prindent();
+			printf("%s = %g,\n", key, d.u.d);
+			continue;
+		}
+
+		d = toml_timestamp_in(curtab, key);
+		if (d.ok) {
+			prindent();
+			printf(" %s = %s,\n", key, toml_raw_in(curtab, key));
+			free(d.u.ts);
+			continue;
+		}
+
+		abort();
     }
 }
 
 
 static void print_array(toml_array_t* curarr)
 {
+	toml_datum_t d;
     toml_array_t* arr;
-    const char* raw;
     toml_table_t* tab;
 	const int n = toml_array_nelem(curarr);
 
 	for (int i = 0; i < n; i++) {
-		if (0 != (raw = toml_raw_at(curarr, i))) {
-			prindent();
-			printf("%s,\n", raw);
-		} else if (0 != (arr = toml_array_at(curarr, i))) {
+
+		if (0 != (arr = toml_array_at(curarr, i))) {
 			prindent();
 			printf("[\n");
 			indent++;
@@ -114,7 +152,10 @@ static void print_array(toml_array_t* curarr)
 			indent--;
 			prindent();
 			printf("],\n");
-		} else if (0 != (tab = toml_table_at(curarr, i))) {
+			continue;
+		}
+
+		if (0 != (tab = toml_table_at(curarr, i))) {
 			prindent();
 			printf("{\n");
 			indent++;
@@ -122,8 +163,48 @@ static void print_array(toml_array_t* curarr)
 			indent--;
 			prindent();
 			printf("},\n");
+			continue;
 		}
-    }
+
+		d = toml_string_at(curarr, i);
+		if (d.ok) {
+			prindent();
+			printf("%s,\n", toml_raw_at(curarr, i));
+			free(d.u.s);
+			continue;
+		}
+
+		d = toml_bool_at(curarr, i);
+		if (d.ok) {
+			prindent();
+			printf("%s,\n", d.u.b ? "true" : "false");
+			continue;
+		}
+
+		d = toml_int_at(curarr, i);
+		if (d.ok) {
+			prindent();
+			printf("%" PRId64 ",\n", d.u.i);
+			continue;
+		}
+
+		d = toml_double_at(curarr, i);
+		if (d.ok) {
+			prindent();
+			printf("%g,\n", d.u.d);
+			continue;
+		}
+
+		d = toml_timestamp_at(curarr, i);
+		if (d.ok) {
+			prindent();
+			printf("%s,\n", toml_raw_at(curarr, i));
+			free(d.u.ts);
+			continue;
+		}
+
+		abort();
+	}
 }
 
 
