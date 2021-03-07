@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <ctype.h>
 #include "toml.h"
 
 typedef struct node_t node_t;
@@ -52,6 +53,42 @@ static void prindent()
 }
 
 
+static void print_string(const char* s)
+{
+	int ok = 1;
+	for (const char* p = s; *p && ok; p++) {
+		int ch = *p;
+		ok = isprint(ch) && ch != '"' && ch != '\\';
+	}
+
+	if (ok) {
+		printf("\"%s\"", s);
+		return;
+	}
+
+	int len = strlen(s);
+
+	printf("\"");
+	for ( ; len; len--, s++) {
+		int ch = *s;
+		if (isprint(ch) && ch != '"' && ch != '\\') {
+			putchar(ch);
+			continue;
+		}
+
+		switch (ch) {
+		case 0x8: printf("\\b"); continue;
+		case 0x9: printf("\\t"); continue;
+		case 0xa: printf("\\n"); continue;
+		case 0xc: printf("\\f"); continue;
+		case 0xd: printf("\\r"); continue;
+		case '"': printf("\\\""); continue;
+		case '\\': printf("\\\\"); continue;
+		default: printf("\\0x%02x", ch & 0xff); continue;
+		}
+	}
+	printf("\"");
+}
 
 
 static void print_array(toml_array_t* arr);
@@ -96,7 +133,9 @@ static void print_table(toml_table_t* curtab)
 		d = toml_string_in(curtab, key);
 		if (d.ok) {
 			prindent();
-			printf("%s = %s,\n", key, toml_raw_in(curtab, key));
+			printf("%s = ", key);
+			print_string(d.u.s);
+			printf(",\n");
 			free(d.u.s);
 			continue;
 		}
@@ -169,7 +208,8 @@ static void print_array(toml_array_t* curarr)
 		d = toml_string_at(curarr, i);
 		if (d.ok) {
 			prindent();
-			printf("%s,\n", toml_raw_at(curarr, i));
+			print_string(d.u.s);
+			printf(",\n");
 			free(d.u.s);
 			continue;
 		}
