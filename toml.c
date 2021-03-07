@@ -1595,12 +1595,18 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 {
 	char* orig = p;
 	if (0 == strncmp(p, "'''", 3)) {
-		p = strstr(p + 3, "'''");
-		if (0 == p) {
-			return e_syntax(ctx, lineno, "unterminated triple-s-quote");
+		char* q = p + 3;
+
+		while (1) {
+			q = strstr(q, "'''");
+			if (0 == q) {
+				return e_syntax(ctx, lineno, "unterminated triple-s-quote");
+			}
+			while (q[3] == '\'') q++;
+			break;
 		}
 
-		set_token(ctx, STRING, lineno, orig, p + 3 - orig);
+		set_token(ctx, STRING, lineno, orig, q + 3 - orig);
 		return 0;
 	}
 
@@ -1619,6 +1625,8 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 			while (q[3] == '\"') q++;
 			break;
 		}
+
+		char* tsq = strstr(p, "\'\'\'");
 
 		// the string is [p+3, q-1]
 
@@ -1645,6 +1653,9 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 		if (hexreq)
 			return e_syntax(ctx, lineno, "expected more hex char");
 
+		if (tsq && tsq < q) {
+			return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
+		}
 		set_token(ctx, STRING, lineno, orig, q + 3 - orig);
 		return 0;
 	}
@@ -1660,6 +1671,7 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	}
 
 	if ('\"' == *p) {
+		char* tsq = strstr(p, "\'\'\'");
 		int hexreq = 0;		/* #hex required */
 		int escape = 0;
 		for (p++; *p; p++) {
@@ -1681,6 +1693,10 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 		}
 		if (*p != '"') {
 			return e_syntax(ctx, lineno, "unterminated quote");
+		}
+
+		if (tsq && tsq < p) {
+			return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
 		}
 
 		set_token(ctx, STRING, lineno, orig, p + 1 - orig);
