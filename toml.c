@@ -1605,10 +1605,26 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	}
 
 	if (0 == strncmp(p, "\"\"\"", 3)) {
+		char* q = p + 3;
+
+		while (1) {
+			q = strstr(q, "\"\"\"");
+			if (0 == q) {
+				return e_syntax(ctx, lineno, "unterminated triple-d-quote");
+			}
+			if (q[-1] == '\\') {
+				q++;
+				continue;
+			}
+			while (q[3] == '\"') q++;
+			break;
+		}
+
+		// the string is [p+3, q-1]
+
 		int hexreq = 0;		/* #hex required */
 		int escape = 0;
-		int qcnt = 0;		/* count quote */
-		for (p += 3; *p && qcnt < 3; p++) {
+		for (p += 3; p < q; p++) {
 			if (escape) {
 				escape = 0;
 				if (strchr("btnfr\"\\", *p)) continue;
@@ -1623,13 +1639,13 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 				return e_syntax(ctx, lineno, "expect hex char");
 			}
 			if (*p == '\\') { escape = 1; continue; }
-			qcnt = (*p == '"') ? qcnt + 1 : 0;
 		}
-		if (qcnt != 3) {
-			return e_syntax(ctx, lineno, "unterminated triple-quote");
-		}
+		if (escape)
+			return e_syntax(ctx, lineno, "expect an escape char");
+		if (hexreq)
+			return e_syntax(ctx, lineno, "expected more hex char");
 
-		set_token(ctx, STRING, lineno, orig, p - orig);
+		set_token(ctx, STRING, lineno, orig, q + 3 - orig);
 		return 0;
 	}
 
