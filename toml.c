@@ -1626,8 +1626,6 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 			break;
 		}
 
-		char* tsq = strstr(p, "\'\'\'");
-
 		// the string is [p+3, q-1]
 
 		int hexreq = 0;		/* #hex required */
@@ -1653,9 +1651,6 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 		if (hexreq)
 			return e_syntax(ctx, lineno, "expected more hex char");
 
-		if (tsq && tsq < q) {
-			return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
-		}
 		set_token(ctx, STRING, lineno, orig, q + 3 - orig);
 		return 0;
 	}
