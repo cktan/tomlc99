@@ -1,19 +1,19 @@
 /*
   MIT License
-  
+
   Copyright (c) 2017 - 2019 CK Tan
   https://github.com/cktan/tomlc99
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-  
+
   The above copyright notice and this permission notice shall be included in all
   copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,14 +41,14 @@ typedef struct toml_table_t toml_table_t;
 typedef struct toml_array_t toml_array_t;
 typedef struct toml_datum_t toml_datum_t;
 
-/* Parse a file. Return a table on success, or 0 otherwise. 
+/* Parse a file. Return a table on success, or 0 otherwise.
  * Caller must toml_free(the-return-value) after use.
  */
-TOML_EXTERN toml_table_t* toml_parse_file(FILE* fp, 
+TOML_EXTERN toml_table_t* toml_parse_file(FILE* fp,
 										  char* errbuf,
 										  int errbufsz);
 
-/* Parse a string containing the full config. 
+/* Parse a string containing the full config.
  * Return a table on success, or 0 otherwise.
  * Caller must toml_free(the-return-value) after use.
  */
@@ -56,14 +56,14 @@ TOML_EXTERN toml_table_t* toml_parse(char* conf, /* NUL terminated, please. */
 									 char* errbuf,
 									 int errbufsz);
 
-/* Free the table returned by toml_parse() or toml_parse_file(). Once 
- * this function is called, any handles accessed through this tab 
+/* Free the table returned by toml_parse() or toml_parse_file(). Once
+ * this function is called, any handles accessed through this tab
  * directly or indirectly are no longer valid.
  */
 TOML_EXTERN void toml_free(toml_table_t* tab);
 
 
-/* Timestamp types. The year, month, day, hour, minute, second, z 
+/* Timestamp types. The year, month, day, hour, minute, second, z
  * fields may be NULL if they are not relevant. e.g. In a DATE
  * type, the hour, minute, second and z fields will be NULLs.
  */
@@ -80,7 +80,7 @@ struct toml_timestamp_t {
 
 
 /*-----------------------------------------------------------------
- *  Enhanced access methods 
+ *  Enhanced access methods
  */
 struct toml_datum_t {
 	int ok;
@@ -122,13 +122,13 @@ TOML_EXTERN toml_table_t* toml_table_in(const toml_table_t* tab,
 										const char* key);
 
 /*-----------------------------------------------------------------
- * lesser used 
+ * lesser used
  */
-/* Return the array kind: 't'able, 'a'rray, 'v'alue */
+/* Return the array kind: 't'able, 'a'rray, 'v'alue, 'm'ixed */
 TOML_EXTERN char toml_array_kind(const toml_array_t* arr);
 
-/* For array kind 'v'alue, return the type of values 
-   i:int, d:double, b:bool, s:string, t:time, D:date, T:timestamp
+/* For array kind 'v'alue, return the type of values
+   i:int, d:double, b:bool, s:string, t:time, D:date, T:timestamp, 'm'ixed
    0 if unknown
 */
 TOML_EXTERN char toml_array_type(const toml_array_t* arr);
@@ -149,7 +149,7 @@ TOML_EXTERN int toml_table_ntab(const toml_table_t* tab);
 TOML_EXTERN const char* toml_table_key(const toml_table_t* tab);
 
 /*--------------------------------------------------------------
- * misc 
+ * misc
  */
 TOML_EXTERN int toml_utf8_to_ucs(const char* orig, int len, int64_t* ret);
 TOML_EXTERN int toml_ucs_to_utf8(int64_t code, char buf[6]);
@@ -158,7 +158,7 @@ TOML_EXTERN void toml_set_memutil(void* (*xxmalloc)(size_t),
 
 
 /*--------------------------------------------------------------
- *  deprecated 
+ *  deprecated
  */
 /* A raw value, must be processed by toml_rto* before using. */
 typedef const char* toml_raw_t;
