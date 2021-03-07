@@ -157,19 +157,35 @@ static void print_table(toml_table_t* curtab)
 		d = toml_double_in(curtab, key);
 		if (d.ok) {
 			prindent();
-			printf("%s = %g,\n", key, d.u.d);
+			printf("%s = %f,\n", key, d.u.d);
 			continue;
 		}
 
 		d = toml_timestamp_in(curtab, key);
 		if (d.ok) {
 			prindent();
-			printf(" %s = %s,\n", key, toml_raw_in(curtab, key));
+			printf("%s = ", key);
+			if (d.u.ts->year) {
+				printf("%04d-%02d-%02d%s", *d.u.ts->year, *d.u.ts->month, *d.u.ts->day,
+					   d.u.ts->hour ? "T" : "");
+			}
+			if (d.u.ts->hour) {
+				printf("%02d:%02d:%02d", *d.u.ts->hour, *d.u.ts->minute, *d.u.ts->second);
+				if (d.u.ts->millisec) {
+					printf(".%d", *d.u.ts->millisec);
+				}
+				if (d.u.ts->z) {
+					printf("%s", d.u.ts->z);
+				}
+			}
+			printf(",\n");
 			free(d.u.ts);
 			continue;
 		}
 
-		abort();
+		fflush(stdout);
+		fprintf(stderr, "ERROR: unable to decode value in table\n");
+		exit(1);
     }
 }
 
@@ -231,19 +247,34 @@ static void print_array(toml_array_t* curarr)
 		d = toml_double_at(curarr, i);
 		if (d.ok) {
 			prindent();
-			printf("%g,\n", d.u.d);
+			printf("%f,\n", d.u.d);
 			continue;
 		}
 
 		d = toml_timestamp_at(curarr, i);
 		if (d.ok) {
 			prindent();
-			printf("%s,\n", toml_raw_at(curarr, i));
+			if (d.u.ts->year) {
+				printf("%04d-%02d-%02d%s", *d.u.ts->year, *d.u.ts->month, *d.u.ts->day,
+					   d.u.ts->hour ? "T" : "");
+			}
+			if (d.u.ts->hour) {
+				printf("%02d:%02d:%02d", *d.u.ts->hour, *d.u.ts->minute, *d.u.ts->second);
+				if (d.u.ts->millisec) {
+					printf(".%d", *d.u.ts->millisec);
+				}
+				if (d.u.ts->z) {
+					printf("%s", d.u.ts->z);
+				}
+			}
+			printf(",\n");
 			free(d.u.ts);
 			continue;
 		}
 
-		abort();
+		fflush(stdout);
+		fprintf(stderr, "ERROR: unable to decode value in array\n");
+		exit(1);
 	}
 }
 

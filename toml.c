@@ -1079,7 +1079,7 @@ static int parse_keyval(context_t* ctx, toml_table_t* tab)
 	if (eat_token(ctx, STRING, 1, FLINE)) return -1;
 
 	if (ctx->tok.tok == DOT) {
-	/* handle inline dotted key.
+		/* handle inline dotted key.
 		   e.g.
 		   physical.color = "orange"
 		   physical.shape = "round"
@@ -2073,9 +2073,14 @@ int toml_rtod_ex(toml_raw_t src, double* ret_, char* buf, int buflen)
 	if (s[0] == '_')
 		return -1;
 
-	/* disallow +.99 */
-	if (s[0] == '.')
-		return -1;
+	/* decimal point, if used, must be surrounded by at least one digit on each side */
+	{
+		char* dot = strchr(s, '.');
+		if (dot) {
+			if (dot == s || !isdigit(dot[-1]) || !isdigit(dot[1]))
+				return -1;
+		}
+	}
 
 	/* zero must be followed by . or 'e', or NUL */
 	if (s[0] == '0' && s[1] && !strchr("eE.", s[1]))
@@ -2084,27 +2089,16 @@ int toml_rtod_ex(toml_raw_t src, double* ret_, char* buf, int buflen)
 	/* just strip underscores and pass to strtod */
 	while (*s && p < q) {
 		int ch = *s++;
-		switch (ch) {
-		case '.':
-			if (s[-2] == '_') return -1;
-			if (s[0] == '_') return -1;
-			break;
-		case '_':
+		if (ch == '_') {
 			// disallow '__'
 			if (s[0] == '_') return -1;
+			// disallow last char '_'
+			if (s[0] == 0) return -1;
 			continue;			/* skip _ */
-		default:
-			break;
 		}
 		*p++ = ch;
 	}
 	if (*s || p == q) return -1; /* reached end of string or buffer is full? */
-
-	/* last char cannot be '_' */
-	if (s[-1] == '_') return -1;
-
-	if (p != buf && p[-1] == '.')
-		return -1; /* no trailing zero */
 
 	/* cap with NUL */
 	*p = 0;
@@ -2219,6 +2213,14 @@ toml_datum_t toml_timestamp_at(const toml_array_t* arr, int idx)
 		ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
 		if (ret.ok) {
 			*ret.u.ts = ts;
+			if (ret.u.ts->year) ret.u.ts->year = &ret.u.ts->__buffer.year;
+			if (ret.u.ts->month) ret.u.ts->month = &ret.u.ts->__buffer.month;
+			if (ret.u.ts->day) ret.u.ts->day = &ret.u.ts->__buffer.day;
+			if (ret.u.ts->hour) ret.u.ts->hour = &ret.u.ts->__buffer.hour;
+			if (ret.u.ts->minute) ret.u.ts->minute = &ret.u.ts->__buffer.minute;
+			if (ret.u.ts->second) ret.u.ts->second = &ret.u.ts->__buffer.second;
+			if (ret.u.ts->millisec) ret.u.ts->millisec = &ret.u.ts->__buffer.millisec;
+			if (ret.u.ts->z) ret.u.ts->z = ret.u.ts->__buffer.z;
 		}
 	}
 	return ret;
@@ -2269,6 +2271,14 @@ toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key)
 		ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
 		if (ret.ok) {
 			*ret.u.ts = ts;
+			if (ret.u.ts->year) ret.u.ts->year = &ret.u.ts->__buffer.year;
+			if (ret.u.ts->month) ret.u.ts->month = &ret.u.ts->__buffer.month;
+			if (ret.u.ts->day) ret.u.ts->day = &ret.u.ts->__buffer.day;
+			if (ret.u.ts->hour) ret.u.ts->hour = &ret.u.ts->__buffer.hour;
+			if (ret.u.ts->minute) ret.u.ts->minute = &ret.u.ts->__buffer.minute;
+			if (ret.u.ts->second) ret.u.ts->second = &ret.u.ts->__buffer.second;
+			if (ret.u.ts->millisec) ret.u.ts->millisec = &ret.u.ts->__buffer.millisec;
+			if (ret.u.ts->z) ret.u.ts->z = ret.u.ts->__buffer.z;
 		}
 	}
 	return ret;

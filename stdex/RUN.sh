@@ -9,7 +9,7 @@ for i in *.toml; do
 	echo " [FAILED]"
       fi
    else
-      echo " [??]"
+      echo " [?????]"
    fi
  
 done
