@@ -1604,6 +1604,16 @@ static int scan_time(const char* p, int* hh, int* mm, int* ss)
 	return (hour >= 0 && minute >= 0 && second >= 0) ? 0 : -1;
 }
 
+/* Would be memmem(start, end-start, "\'\'\'", 3) in GNU: */
+static inline char* find_triple_s_quote (char* p, char* end) {
+	end -= 2;
+
+	for (; p<end; p++) {
+		if (*p == '\'' && *(p+1) == '\'' && *(p+2) == '\'')  return p;
+	}
+
+	return NULL;
+}
 
 static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 {
@@ -1680,7 +1690,7 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	}
 
 	if ('\"' == *p) {
-		char* tsq = strstr(p, "\'\'\'");
+		char *porig = 1 + p;
 		int hexreq = 0;		/* #hex required */
 		int escape = 0;
 		for (p++; *p; p++) {
@@ -1704,7 +1714,7 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 			return e_syntax(ctx, lineno, "unterminated quote");
 		}
 
-		if (tsq && tsq < p) {
+		if (find_triple_s_quote(porig, p)) {
 			return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
 		}
 
@@ -1736,7 +1746,6 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	set_token(ctx, STRING, lineno, orig, p - orig);
 	return 0;
 }
-
 
 static int next_token(context_t* ctx, int dotisspecial)
 {
