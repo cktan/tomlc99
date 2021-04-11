@@ -1680,9 +1680,9 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	}
 
 	if ('\"' == *p) {
-		char* tsq = strstr(p, "\'\'\'");
 		int hexreq = 0;		/* #hex required */
 		int escape = 0;
+		int sqcnt = 0;		/* count single-quote */
 		for (p++; *p; p++) {
 			if (escape) {
 				escape = 0;
@@ -1699,13 +1699,13 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 			if (*p == '\\') { escape = 1; continue; }
 			if (*p == '\n') break;
 			if (*p == '"') break;
+			if (*p == '\'' && ++sqcnt == 3) {
+				return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
+			}
+			sqcnt = 0;
 		}
 		if (*p != '"') {
 			return e_syntax(ctx, lineno, "unterminated quote");
-		}
-
-		if (tsq && tsq < p) {
-			return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
 		}
 
 		set_token(ctx, STRING, lineno, orig, p + 1 - orig);
