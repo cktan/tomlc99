@@ -1696,16 +1696,18 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 				if (strchr("0123456789ABCDEF", *p)) continue;
 				return e_syntax(ctx, lineno, "expect hex char");
 			}
-			if (*p == '\\') { escape = 1; continue; }
-			if (*p == '\n') break;
-			if (*p == '"') break;
-			if (*p == '\'') {
-				if (++sqcnt == 3) {
+			if (sqcnt) {
+				if (*p == '\'') {
+					if (++sqcnt < 3) continue;
 					return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
 				}
-				continue;
+				sqcnt = 0;
 			}
-			sqcnt = 0;
+
+			if (*p == '\\') { escape = 1; continue; }
+			if (*p == '\'') { sqcnt = 1; continue; }
+			if (*p == '\n') break;
+			if (*p == '"')  break;
 		}
 		if (*p != '"') {
 			return e_syntax(ctx, lineno, "unterminated quote");
