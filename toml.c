@@ -1699,8 +1699,11 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 			if (*p == '\\') { escape = 1; continue; }
 			if (*p == '\n') break;
 			if (*p == '"') break;
-			if (*p == '\'' && ++sqcnt == 3) {
-				return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
+			if (*p == '\'') {
+				if (++sqcnt == 3) {
+					return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
+				}
+				continue;
 			}
 			sqcnt = 0;
 		}
