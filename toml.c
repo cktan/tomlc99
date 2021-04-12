@@ -1682,7 +1682,6 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	if ('\"' == *p) {
 		int hexreq = 0;		/* #hex required */
 		int escape = 0;
-		int sqcnt = 0;		/* count single-quote */
 		for (p++; *p; p++) {
 			if (escape) {
 				escape = 0;
@@ -1696,16 +1695,13 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 				if (strchr("0123456789ABCDEF", *p)) continue;
 				return e_syntax(ctx, lineno, "expect hex char");
 			}
-			if (sqcnt) {
-				if (*p == '\'') {
-					if (++sqcnt < 3) continue;
+			if (*p == '\\') { escape = 1; continue; }
+			if (*p == '\'') {
+				if (p[1] == '\'' && p[2] == '\'') {
 					return e_syntax(ctx, lineno, "triple-s-quote inside string lit");
 				}
-				sqcnt = 0;
+				continue;
 			}
-
-			if (*p == '\\') { escape = 1; continue; }
-			if (*p == '\'') { sqcnt = 1; continue; }
 			if (*p == '\n') break;
 			if (*p == '"')  break;
 		}
