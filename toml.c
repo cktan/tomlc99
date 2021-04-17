@@ -50,6 +50,10 @@ void toml_set_memutil(void* (*xxmalloc)(size_t),
 #define MALLOC(a)	  ppmalloc(a)
 #define FREE(a)		  ppfree(a)
 
+#define malloc(x)   error:do-not-use---use-MALLOC-instead
+#define free(x)     error:do-not-use---use-FREE-instead
+
+#define calloc(x,y) error:do-not-use---use-CALLOC-instead
 static void* CALLOC(size_t nmemb, size_t sz)
 {
 	int nb = sz * nmemb;
@@ -61,6 +65,7 @@ static void* CALLOC(size_t nmemb, size_t sz)
 }
 
 
+#define strdup(x)	error:do-not-use---use-STRDUP-instead
 static char* STRDUP(const char* s)
 {
 	int len = strlen(s);
@@ -72,6 +77,7 @@ static char* STRDUP(const char* s)
 	return p;
 }
 
+#define strndup(x)	error:do-not-use---use-STRNDUP-instead
 static char* STRNDUP(const char* s, size_t n)
 {
 	size_t len = strnlen(s, n);
@@ -82,6 +88,7 @@ static char* STRNDUP(const char* s, size_t n)
 	}
 	return p;
 }
+
 
 
 
@@ -2225,7 +2232,7 @@ toml_datum_t toml_timestamp_at(const toml_array_t* arr, int idx)
 	memset(&ret, 0, sizeof(ret));
 	ret.ok = (0 == toml_rtots(toml_raw_at(arr, idx), &ts));
 	if (ret.ok) {
-		ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
+		ret.ok = !!(ret.u.ts = MALLOC(sizeof(*ret.u.ts)));
 		if (ret.ok) {
 			*ret.u.ts = ts;
 			if (ret.u.ts->year) ret.u.ts->year = &ret.u.ts->__buffer.year;
@@ -2283,7 +2290,7 @@ toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key)
 	memset(&ret, 0, sizeof(ret));
 	ret.ok = (0 == toml_rtots(toml_raw_in(arr, key), &ts));
 	if (ret.ok) {
-		ret.ok = !!(ret.u.ts = malloc(sizeof(*ret.u.ts)));
+		ret.ok = !!(ret.u.ts = MALLOC(sizeof(*ret.u.ts)));
 		if (ret.ok) {
 			*ret.u.ts = ts;
 			if (ret.u.ts->year) ret.u.ts->year = &ret.u.ts->__buffer.year;
