@@ -2034,7 +2034,7 @@ int toml_rtoi(toml_raw_t src, int64_t* ret_)
 	if (s[0] == '_')
 		return -1;
 
-	/* if 0 ... */
+	/* if 0* ... */
 	if ('0' == s[0]) {
 		switch (s[1]) {
 		case 'x': base = 16; s += 2; break;
@@ -2050,20 +2050,18 @@ int toml_rtoi(toml_raw_t src, int64_t* ret_)
 	/* just strip underscores and pass to strtoll */
 	while (*s && p < q) {
 		int ch = *s++;
-		switch (ch) {
-		case '_':
+		if (ch == '_') {
 			// disallow '__'
 			if (s[0] == '_') return -1;
+			// numbers cannot end with '_'
+			if (s[0] == '\0') return -1;
 			continue;			/* skip _ */
-		default:
-			break;
 		}
 		*p++ = ch;
 	}
-	if (*s || p == q) return -1;
 
-	/* last char cannot be '_' */
-	if (s[-1] == '_') return -1;
+	// if not at end-of-string or we ran out of buffer ...
+	if (*s || p == q) return -1;
 
 	/* cap with NUL */
 	*p = 0;
