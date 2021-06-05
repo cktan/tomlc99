@@ -1944,7 +1944,7 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t* ret)
 			char* qq;
 			p++;
 			errno = 0;
-			*millisec = strtol(p, &qq, 0);
+			*millisec = strtol(p, &qq, 10);
 			if (errno) {
 				return -1;
 			}
