@@ -1900,6 +1900,8 @@ toml_table_t* toml_table_at(const toml_array_t* arr, int idx)
 }
 
 
+static int parse_millisec(const char* p, const char** endp);
+
 int toml_rtots(toml_raw_t src_, toml_timestamp_t* ret)
 {
 	if (! src_) return -1;
@@ -1941,17 +1943,9 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t* ret)
 		/* optionally, parse millisec */
 		p += 8;
 		if (*p == '.') {
-			char* qq;
-			p++;
-			errno = 0;
-			*millisec = strtol(p, &qq, 10);
-			if (errno) {
-				return -1;
-			}
-			while (*millisec > 999) {
-				*millisec /= 10;
-			}
-
+			p++;				/* skip '.' */
+			const char* qq;
+			*millisec = parse_millisec(p, &qq);
 			ret->millisec = millisec;
 			p = qq;
 		}
@@ -2301,5 +2295,17 @@ toml_datum_t toml_timestamp_in(const toml_table_t* arr, const char* key)
 			if (ret.u.ts->z) ret.u.ts->z = ret.u.ts->__buffer.z;
 		}
 	}
+	return ret;
+}
+
+
+static int parse_millisec(const char* p, const char** endp)
+{
+	int ret = 0;
+	int unit = 100;				/* unit in millisec */
+	for ( ; '0' <= *p && *p <= '9'; p++, unit /= 10) {
+		ret += (*p - '0') * unit;
+	}
+	*endp = p;
 	return ret;
 }
