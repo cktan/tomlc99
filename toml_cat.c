@@ -39,8 +39,8 @@
 
 typedef struct node_t node_t;
 struct node_t {
-    const char*   key;
-    toml_table_t* tab;
+	const char*	  key;
+	toml_table_t* tab;
 };
 
 node_t stack[20];
@@ -97,12 +97,12 @@ static void print_array(toml_array_t* arr);
 static void print_table(toml_table_t* curtab)
 {
 	toml_datum_t d;
-    int i;
-    const char* key;
-    toml_array_t* arr;
-    toml_table_t* tab;
+	int i;
+	const char* key;
+	toml_array_t* arr;
+	toml_table_t* tab;
 
-    for (i = 0; 0 != (key = toml_key_in(curtab, i)); i++) {
+	for (i = 0; 0 != (key = toml_key_in(curtab, i)); i++) {
 
 		if (0 != (arr = toml_array_in(curtab, key))) {
 			prindent();
@@ -186,15 +186,15 @@ static void print_table(toml_table_t* curtab)
 		fflush(stdout);
 		fprintf(stderr, "ERROR: unable to decode value in table\n");
 		exit(1);
-    }
+	}
 }
 
 
 static void print_array(toml_array_t* curarr)
 {
 	toml_datum_t d;
-    toml_array_t* arr;
-    toml_table_t* tab;
+	toml_array_t* arr;
+	toml_table_t* tab;
 	const int n = toml_array_nelem(curarr);
 
 	for (int i = 0; i < n; i++) {
@@ -283,34 +283,34 @@ static void print_array(toml_array_t* curarr)
 
 static void cat(FILE* fp)
 {
-    char  errbuf[200];
+	char  errbuf[200];
 
-    toml_table_t* tab = toml_parse_file(fp, errbuf, sizeof(errbuf));
-    if (!tab) {
+	toml_table_t* tab = toml_parse_file(fp, errbuf, sizeof(errbuf));
+	if (!tab) {
 		fprintf(stderr, "ERROR: %s\n", errbuf);
 		return;
-    }
+	}
 
-    stack[stacktop].tab = tab;
-    stack[stacktop].key = "";
-    stacktop++;
+	stack[stacktop].tab = tab;
+	stack[stacktop].key = "";
+	stacktop++;
 	printf("{\n");
 	indent++;
-    print_table(tab);
+	print_table(tab);
 	indent--;
 	printf("}\n");
-    stacktop--;
+	stacktop--;
 
-    toml_free(tab);
+	toml_free(tab);
 }
 
 
 int main(int argc, const char* argv[])
 {
-    int i;
-    if (argc == 1) {
+	int i;
+	if (argc == 1) {
 		cat(stdin);
-    } else {
+	} else {
 		for (i = 1; i < argc; i++) {
 
 			FILE* fp = fopen(argv[i], "r");
@@ -322,6 +322,6 @@ int main(int argc, const char* argv[])
 			cat(fp);
 			fclose(fp);
 		}
-    }
-    return 0;
+	}
+	return 0;
 }
