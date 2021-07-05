@@ -74,7 +74,7 @@ static void print_raw(const char* s)
 	} else if (0 == toml_rtots(s, &ts)) {
 		char millisec[10];
 		if (ts.millisec)
-			sprintf(millisec, ".%d", *ts.millisec);
+			sprintf(millisec, ".%03d", *ts.millisec);
 		else
 			millisec[0] = 0;
 		if (ts.year && ts.hour) {
