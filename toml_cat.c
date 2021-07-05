@@ -93,6 +93,24 @@ static void print_string(const char* s)
 
 static void print_array(toml_array_t* arr);
 
+static void print_timestamp(toml_datum_t d)
+{
+	if (d.u.ts->year) {
+		printf("%04d-%02d-%02d%s", *d.u.ts->year, *d.u.ts->month, *d.u.ts->day,
+			   d.u.ts->hour ? "T" : "");
+	}
+	if (d.u.ts->hour) {
+		printf("%02d:%02d:%02d", *d.u.ts->hour, *d.u.ts->minute, *d.u.ts->second);
+		if (d.u.ts->millisec) {
+			printf(".%03d", *d.u.ts->millisec);
+		}
+		if (d.u.ts->z) {
+			printf("%s", d.u.ts->z);
+		}
+	}
+}
+
+
 
 static void print_table(toml_table_t* curtab)
 {
@@ -165,19 +183,7 @@ static void print_table(toml_table_t* curtab)
 		if (d.ok) {
 			prindent();
 			printf("%s = ", key);
-			if (d.u.ts->year) {
-				printf("%04d-%02d-%02d%s", *d.u.ts->year, *d.u.ts->month, *d.u.ts->day,
-					   d.u.ts->hour ? "T" : "");
-			}
-			if (d.u.ts->hour) {
-				printf("%02d:%02d:%02d", *d.u.ts->hour, *d.u.ts->minute, *d.u.ts->second);
-				if (d.u.ts->millisec) {
-					printf(".%d", *d.u.ts->millisec);
-				}
-				if (d.u.ts->z) {
-					printf("%s", d.u.ts->z);
-				}
-			}
+			print_timestamp(d);
 			printf(",\n");
 			free(d.u.ts);
 			continue;
@@ -254,19 +260,7 @@ static void print_array(toml_array_t* curarr)
 		d = toml_timestamp_at(curarr, i);
 		if (d.ok) {
 			prindent();
-			if (d.u.ts->year) {
-				printf("%04d-%02d-%02d%s", *d.u.ts->year, *d.u.ts->month, *d.u.ts->day,
-					   d.u.ts->hour ? "T" : "");
-			}
-			if (d.u.ts->hour) {
-				printf("%02d:%02d:%02d", *d.u.ts->hour, *d.u.ts->minute, *d.u.ts->second);
-				if (d.u.ts->millisec) {
-					printf(".%d", *d.u.ts->millisec);
-				}
-				if (d.u.ts->z) {
-					printf("%s", d.u.ts->z);
-				}
-			}
+			print_timestamp(d);
 			printf(",\n");
 			free(d.u.ts);
 			continue;
