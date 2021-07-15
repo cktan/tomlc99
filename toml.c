@@ -1723,7 +1723,7 @@ static int scan_string(context_t* ctx, char* p, int lineno, int dotisspecial)
 	/* check for timestamp without quotes */
 	if (0 == scan_date(p, 0, 0, 0) || 0 == scan_time(p, 0, 0, 0)) {
 		// forward thru the timestamp
-		for ( ; *p && strchr("0123456789.:+-T Z", toupper(*p)); p++);
+		p += strspn(p, "0123456789.:+-T Z");
 		// squeeze out any spaces at end of string
 		for ( ; p[-1] == ' '; p--);
 		// tokenize
