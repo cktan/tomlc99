@@ -1,6 +1,6 @@
-# tomlc99
+# tomlvc6
 
-TOML in c99; v1.0 compliant.
+TOML for VC6 in C89; v1.0 compliant.
 
 If you are looking for a C++ library, you might try this wrapper: [https://github.com/cktan/tomlcpp](https://github.com/cktan/tomlcpp).
 
