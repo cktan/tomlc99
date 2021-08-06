@@ -27,7 +27,19 @@
 
 
 #include <stdio.h>
+
+#if __cplusplus >= 201103L \
+    || __STDC_VERSION__ >= 199901L \
+    || _MSC_VER >= 1600
+
 #include <stdint.h>
+#include <stdbool.h>
+
+#else
+
+typedef __int64 int64_t;
+
+#endif
 
 
 #ifdef __cplusplus
