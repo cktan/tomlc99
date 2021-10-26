@@ -2,7 +2,7 @@
 
   MIT License
 
-  Copyright (c) 2017 - 2021 CK Tan
+  Copyright (c) CK Tan
   https://github.com/cktan/tomlc99
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1805,6 +1805,25 @@ const char* toml_key_in(const toml_table_t* tab, int keyidx)
 
 	return 0;
 }
+
+int toml_key_exists(const toml_table_t* tab, const char* key)
+{
+	int i;
+	for (i = 0; i < tab->nkval; i++) {
+		if (0 == strcmp(key, tab->kval[i]->key))
+			return 1;
+	}
+	for (i = 0; i < tab->narr; i++) {
+		if (0 == strcmp(key, tab->arr[i]->key))
+			return 1;
+	}
+	for (i = 0; i < tab->ntab; i++) {
+		if (0 == strcmp(key, tab->tab[i]->key))
+			return 1;
+	}
+	return 0;
+}
+
 
 toml_raw_t toml_raw_in(const toml_table_t* tab, const char* key)
 {

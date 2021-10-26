@@ -1,7 +1,7 @@
 /*
   MIT License
 
-  Copyright (c) 2017 - 2019 CK Tan
+  Copyright (c) CK Tan
   https://github.com/cktan/tomlc99
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -109,6 +109,8 @@ TOML_EXTERN toml_table_t* toml_table_at(const toml_array_t* arr, int idx);
 /* on tables: */
 /* ... retrieve the key in table at keyidx. Return 0 if out of range. */
 TOML_EXTERN const char* toml_key_in(const toml_table_t* tab, int keyidx);
+/* ... returns 1 if key exists in tab, 0 otherwise */
+TOML_EXTERN int toml_key_exists(const toml_table_t* tab, const char* key);
 /* ... retrieve values using key. */
 TOML_EXTERN toml_datum_t toml_string_in(const toml_table_t* arr, const char* key);
 TOML_EXTERN toml_datum_t toml_bool_in(const toml_table_t* arr, const char* key);
