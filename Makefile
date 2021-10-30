@@ -2,6 +2,7 @@ HFILES = toml.h
 CFILES = toml.c
 OBJ = $(CFILES:.c=.o)
 EXEC = toml_json toml_cat toml_sample
+PCFILE = libtoml.pc
 
 CFLAGS = -std=c99 -Wall -Wextra -fpic
 LIB_VERSION = 1.0
@@ -41,6 +42,7 @@ install: all
 	install toml.h ${prefix}/include
 	install $(LIB) ${prefix}/lib
 	install $(LIB_SHARED) ${prefix}/lib
+	install $(PCFILE) /usr/lib/pkgconfig
 
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
