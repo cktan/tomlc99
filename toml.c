@@ -65,6 +65,7 @@ static void* CALLOC(size_t nmemb, size_t sz)
 }
 
 
+#undef strdup
 #define strdup(x)	error:do-not-use---use-STRDUP-instead
 static char* STRDUP(const char* s)
 {
@@ -77,6 +78,7 @@ static char* STRDUP(const char* s)
 	return p;
 }
 
+#undef strndup
 #define strndup(x)	error:do-not-use---use-STRNDUP-instead
 static char* STRNDUP(const char* s, size_t n)
 {
