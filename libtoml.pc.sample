@@ -1,4 +1,4 @@
-prefix=/usr/local/
+prefix=/usr/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
@@ -8,4 +8,4 @@ URL: https://github.com/cktan/tomlc99/
 Description: TOML C library in c99.
 Version: v1.0
 Libs: -L${libdir} -ltoml
-Cflags: -I${includedir} 
+Cflags: -I${includedir}

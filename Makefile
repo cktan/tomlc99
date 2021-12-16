@@ -1,3 +1,4 @@
+prefix ?= /usr/local
 HFILES = toml.h
 CFILES = toml.c
 OBJ = $(CFILES:.c=.o)
@@ -35,14 +36,15 @@ toml_cat: toml_cat.c $(LIB)
 toml_sample: toml_sample.c $(LIB)
 
 
-prefix ?= /usr/local
 
 install: all
 	install -d ${prefix}/include ${prefix}/lib
 	install toml.h ${prefix}/include
 	install $(LIB) ${prefix}/lib
 	install $(LIB_SHARED) ${prefix}/lib
-	install $(PCFILE) /usr/lib/pkgconfig
+ifeq "$(prefix)" "/usr/local"
+	install $(PCFILE) /usr/local/lib/pkgconfig
+endif
 
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
