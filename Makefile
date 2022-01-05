@@ -29,13 +29,7 @@ libtoml.a: toml.o
 libtoml.so.$(LIB_VERSION): toml.o
 	$(CC) -shared -o $@ $^
 
-toml_json: toml_json.c $(LIB)
-
-toml_cat: toml_cat.c $(LIB)
-
-toml_sample: toml_sample.c $(LIB)
-
-
+$(EXEC): $(LIB)
 
 install: all
 	install -d ${prefix}/include ${prefix}/lib
@@ -50,4 +44,7 @@ clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
 
 
-.PHONY: all clean install
+format:
+	clang-format -i $(shell find . -name '*.[ch]')
+
+.PHONY: all clean install format
