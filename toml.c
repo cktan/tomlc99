@@ -702,19 +702,22 @@ static int check_key(toml_table_t *tab, const char *key,
   *ret_val = 0;
 
   for (i = 0; i < tab->nkval; i++) {
-    if (0 == strcmp(key, tab->kval[i]->key)) {
+    size_t len = strlen(tab->kval[i]->key);
+    if (0 == strncmp(key, tab->kval[i]->key,len)) {
       *ret_val = tab->kval[i];
       return 'v';
     }
   }
   for (i = 0; i < tab->narr; i++) {
-    if (0 == strcmp(key, tab->arr[i]->key)) {
+    size_t len = strlen(tab->arr[i]->key);
+    if (0 == strncmp(key, tab->arr[i]->key,len)) {
       *ret_arr = tab->arr[i];
       return 'a';
     }
   }
   for (i = 0; i < tab->ntab; i++) {
-    if (0 == strcmp(key, tab->tab[i]->key)) {
+    size_t len = strlen(tab->tab[i]->key);
+    if (0 == strncmp(key, tab->tab[i]->key,len)) {
       *ret_tab = tab->tab[i];
       return 't';
     }
