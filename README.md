@@ -13,7 +13,7 @@ If you are looking for a C++ library, you might try this wrapper: [https://githu
 
 ## Usage
 
-Please see the `toml.h` file for details. What follows is a simple example that
+Please see the `toml.h` file for details. The following is a simple example that
 parses this config file:
 
 ```toml
@@ -22,7 +22,7 @@ parses this config file:
 	port = [ 8080, 8181, 8282 ]
 ```
 
-The steps for getting values from our file is usually :
+These are the usual steps for getting values from a file:
 
 1. Parse the TOML file.
 2. Traverse and locate a table in TOML.
