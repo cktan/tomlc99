@@ -1496,7 +1496,6 @@ toml_table_t *toml_parse_file(FILE *fp, char *errbuf, int errbufsz) {
     int n = fread(buf + off, 1, bufsz - off, fp);
     if (ferror(fp)) {
       snprintf(errbuf, errbufsz, "%s",
-      #pragma warning(suppress : 4996)
                errno ? strerror(errno) : "Error reading file");
       xfree(buf);
       return 0;
