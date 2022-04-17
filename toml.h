@@ -25,6 +25,10 @@
 #ifndef TOML_H
 #define TOML_H
 
+#ifdef _MSC_VER
+#pragma warning(disable: 4996)
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 
