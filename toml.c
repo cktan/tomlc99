@@ -282,6 +282,7 @@ typedef struct toml_keyval_t toml_keyval_t;
 struct toml_keyval_t {
   const char *key; /* key to this value */
   const char *val; /* the raw value */
+  int lineno;
 };
 
 typedef struct toml_arritem_t toml_arritem_t;
@@ -301,6 +302,7 @@ struct toml_array_t {
 
   int nitem; /* number of elements */
   toml_arritem_t *item;
+  int lineno;
 };
 
 struct toml_table_t {
@@ -319,6 +321,7 @@ struct toml_table_t {
   /* tables in the table */
   int ntab;
   toml_table_t **tab;
+  int lineno;
 };
 
 static inline void xfree(const void *x) {
@@ -764,6 +767,7 @@ static toml_keyval_t *create_keyval_in_table(context_t *ctx, toml_table_t *tab,
 
   /* save the key in the new value struct */
   dest->key = newkey;
+  dest->lineno = keytok.lineno;
   return dest;
 }
 
@@ -812,6 +816,7 @@ static toml_table_t *create_keytable_in_table(context_t *ctx, toml_table_t *tab,
 
   /* save the key in the new table struct */
   dest->key = newkey;
+  dest->lineno = ctx->tok.lineno;
   return dest;
 }
 
@@ -905,6 +910,7 @@ static toml_table_t *create_table_in_array(context_t *ctx,
     e_outofmemory(ctx, FLINE);
     return 0;
   }
+  ret->lineno = ctx->tok.lineno;
   base[n].tab = ret;
   parent->item = base;
   parent->nitem++;
@@ -1292,7 +1298,8 @@ static int walk_tabpath(context_t *ctx) {
       nexttab->implicit = true;
     } break;
     }
-
+    
+    nexttab->lineno = ctx->tok.lineno;
     /* switch to next tab */
     curtab = nexttab;
   }
@@ -1887,6 +1894,32 @@ int toml_key_exists(const toml_table_t *tab, const char *key) {
       return 1;
   }
   return 0;
+}
+
+int toml_key_lineno(const toml_table_t *tab, const char *key) {
+  int i;
+  for (i = 0; i < tab->nkval; i++) {
+    if (0 == strcmp(key, tab->kval[i]->key)) {
+      return tab->kval[i]->lineno;
+    }
+  }
+  for (i = 0; i < tab->narr; i++) {
+    if (0 == strcmp(key, tab->arr[i]->key)) {
+      return tab->arr[i]->lineno;
+    }
+  }
+  for (i = 0; i < tab->ntab; i++) {
+    if (0 == strcmp(key, tab->tab[i]->key)) {
+      toml_table_t * value = tab->tab[i];
+      return value->lineno;
+    }
+  }
+
+  return -1;
+}
+
+int toml_table_lineno(const toml_table_t *tab) {
+  return tab->lineno;
 }
 
 toml_raw_t toml_raw_in(const toml_table_t *tab, const char *key) {
