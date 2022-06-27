@@ -34,21 +34,24 @@ int main() {
   }
   printf("Found fruit table starting at line: %d\n",toml_key_lineno(conf,"fruit"));
 
-  toml_table_t * first_fruit = toml_table_at(fruits,1);
+  toml_table_t * second_fruit = toml_table_at(fruits,1);
   
-  toml_datum_t name = toml_string_in(first_fruit, "price");
+  toml_datum_t name = toml_string_in(second_fruit, "price");
   if (!name.ok) {
-    fprintf(stderr, "Fruit at line: %d did not specify a price.\n",toml_table_lineno(first_fruit));
-    
+    fprintf(stderr, "Fruit at line: %d did not specify a price.\n",toml_table_lineno(second_fruit));
   }
 
-  printf("Found fruit with name: %s\n",name.u.s);
+  toml_table_t * third_fruit = toml_table_at(fruits,2);
+  toml_datum_t third_name = toml_string_in(third_fruit,"name");
+  if (!third_name.ok) {
+    fputs("Problem with example toml file",stderr);
+    exit(EXIT_FAILURE);
+  }
 
-  // This could be an example message to the user;
-//   printf("Could not find : %d\n",toml_key_lineno(conf,"fruits"));
-
-
-  // I do not free because it exist immediately 
+  if (strcmp(third_name.u.s,"carrot")) {
+    fprintf(stderr, "Fruit name at line: %d was not a permitted value.\n",toml_key_lineno(third_fruit,"name"));
+  }
+  // I do not free stuff because it exits immediately 
 
   return 0;
 }

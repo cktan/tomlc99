@@ -4,3 +4,7 @@
 
 [[fruit]]
     name = "Orange"
+
+[[fruit]]
+    name = "Carrot"
+    price = 1.2

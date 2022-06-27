@@ -1922,6 +1922,11 @@ int toml_table_lineno(const toml_table_t *tab) {
   return tab->lineno;
 }
 
+
+int toml_array_lineno(const toml_array_t *arr) {
+  return arr->lineno;
+}
+
 toml_raw_t toml_raw_in(const toml_table_t *tab, const char *key) {
   int i;
   for (i = 0; i < tab->nkval; i++) {

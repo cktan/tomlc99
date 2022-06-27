@@ -138,6 +138,8 @@ TOML_EXTERN char toml_array_type(const toml_array_t *arr);
 /* Return the key of an array */
 TOML_EXTERN const char *toml_array_key(const toml_array_t *arr);
 
+TOML_EXTERN int toml_array_lineno(const toml_array_t *arr);
+
 /* Return the number of key-values in a table */
 TOML_EXTERN int toml_table_nkval(const toml_table_t *tab);
 
