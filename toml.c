@@ -1768,7 +1768,7 @@ static int scan_string(context_t *ctx, char *p, int lineno, int dotisspecial) {
   /* check for timestamp without quotes */
   if (0 == scan_date(p, 0, 0, 0) || 0 == scan_time(p, 0, 0, 0)) {
     // forward thru the timestamp
-    p += strspn(p, "0123456789.:+-T Z");
+    p += strspn(p, "0123456789.:+-Tt Zz");
     // squeeze out any spaces at end of string
     for (; p[-1] == ' '; p--)
       ;
@@ -1984,7 +1984,7 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t *ret) {
     p += 10;
     if (*p) {
       // parse the T or space separator
-      if (*p != 'T' && *p != ' ')
+      if (*p != 'T' && *p != 't' && *p != ' ')
         return -1;
       must_parse_time = 1;
       p++;
