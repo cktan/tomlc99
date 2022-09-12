@@ -45,6 +45,7 @@ void toml_set_memutil(void *(*xxmalloc)(size_t), void (*xxfree)(void *)) {
     ppfree = xxfree;
 }
 
+#define ALIGN8(sz) (((sz) + 7) & ~7)
 #define MALLOC(a) ppmalloc(a)
 #define FREE(a) ppfree(a)
 
@@ -53,7 +54,7 @@ void toml_set_memutil(void *(*xxmalloc)(size_t), void (*xxfree)(void *)) {
 #define calloc(x, y) error - forbidden - use CALLOC instead
 
 static void *CALLOC(size_t nmemb, size_t sz) {
-  int nb = sz * nmemb;
+  int nb = ALIGN8(sz) * nmemb;
   void *p = MALLOC(nb);
   if (p) {
     memset(p, 0, nb);
