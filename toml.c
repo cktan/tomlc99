@@ -412,8 +412,10 @@ static void *expand(void *p, int sz, int newsz) {
   if (!s)
     return 0;
 
-  memcpy(s, p, sz);
-  FREE(p);
+  if (p) {
+    memcpy(s, p, sz);
+    FREE(p);
+  }
   return s;
 }
 
@@ -423,8 +425,10 @@ static void **expand_ptrarr(void **p, int n) {
     return 0;
 
   s[n] = 0;
-  memcpy(s, p, n * sizeof(void *));
-  FREE(p);
+  if (p) {
+    memcpy(s, p, n * sizeof(void *));
+    FREE(p);
+  }
   return s;
 }
 
