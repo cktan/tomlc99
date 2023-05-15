@@ -68,7 +68,7 @@ static void *CALLOC(size_t nmemb, size_t sz) {
 
 static char *STRDUP(const char *s) {
   int len = strlen(s);
-  char *p = MALLOC(len + 1);
+  char *p = (char *)MALLOC(len + 1);
   if (p) {
     memcpy(p, s, len);
     p[len] = 0;
@@ -82,7 +82,7 @@ static char *STRDUP(const char *s) {
 
 static char *STRNDUP(const char *s, size_t n) {
   size_t len = strnlen(s, n);
-  char *p = MALLOC(len + 1);
+  char *p = (char *)MALLOC(len + 1);
   if (p) {
     memcpy(p, s, len);
     p[len] = 0;
@@ -418,7 +418,7 @@ static void *expand(void *p, int sz, int newsz) {
 }
 
 static void **expand_ptrarr(void **p, int n) {
-  void **s = MALLOC((n + 1) * sizeof(void *));
+  void **s = (void **)MALLOC((n + 1) * sizeof(void *));
   if (!s)
     return 0;
 
@@ -429,7 +429,7 @@ static void **expand_ptrarr(void **p, int n) {
 }
 
 static toml_arritem_t *expand_arritem(toml_arritem_t *p, int n) {
-  toml_arritem_t *pp = expand(p, n * sizeof(*p), (n + 1) * sizeof(*p));
+  toml_arritem_t *pp = (toml_arritem_t *)expand(p, n * sizeof(*p), (n + 1) * sizeof(*p));
   if (!pp)
     return 0;
 
@@ -450,7 +450,7 @@ static char *norm_lit_str(const char *src, int srclen, int multiline,
   for (;;) {
     if (off >= max - 10) { /* have some slack for misc stuff */
       int newmax = max + 50;
-      char *x = expand(dst, max, newmax);
+      char *x = (char *)expand(dst, max, newmax);
       if (!x) {
         xfree(dst);
         snprintf(errbuf, errbufsz, "out of memory");
@@ -499,7 +499,7 @@ static char *norm_basic_str(const char *src, int srclen, int multiline,
   for (;;) {
     if (off >= max - 10) { /* have some slack for misc stuff */
       int newmax = max + 50;
-      char *x = expand(dst, max, newmax);
+      char *x = (char *)expand(dst, max, newmax);
       if (!x) {
         xfree(dst);
         snprintf(errbuf, errbufsz, "out of memory");
@@ -1418,7 +1418,7 @@ toml_table_t *toml_parse(char *conf, char *errbuf, int errbufsz) {
   ctx.tok.len = 0;
 
   // make a root table
-  if (0 == (ctx.root = CALLOC(1, sizeof(*ctx.root)))) {
+  if (0 == (ctx.root = (toml_table_t *)CALLOC(1, sizeof(*ctx.root)))) {
     e_outofmemory(&ctx, FLINE);
     // Do not goto fail, root table not set up yet
     return 0;
@@ -1483,7 +1483,7 @@ toml_table_t *toml_parse_file(FILE *fp, char *errbuf, int errbufsz) {
 
     if (off == bufsz) {
       int xsz = bufsz + 1000;
-      char *x = expand(buf, bufsz, xsz);
+      char *x = (char *)expand(buf, bufsz, xsz);
       if (!x) {
         snprintf(errbuf, errbufsz, "out of memory");
         xfree(buf);
@@ -1507,7 +1507,7 @@ toml_table_t *toml_parse_file(FILE *fp, char *errbuf, int errbufsz) {
   /* tag on a NUL to cap the string */
   if (off == bufsz) {
     int xsz = bufsz + 1;
-    char *x = expand(buf, bufsz, xsz);
+    char *x = (char *)expand(buf, bufsz, xsz);
     if (!x) {
       snprintf(errbuf, errbufsz, "out of memory");
       xfree(buf);
@@ -2160,7 +2160,7 @@ int toml_rtod_ex(toml_raw_t src, double *ret_, char *buf, int buflen) {
   /* decimal point, if used, must be surrounded by at least one digit on each
    * side */
   {
-    char *dot = strchr(s, '.');
+    char *dot = (char *)strchr(s, '.');
     if (dot) {
       if (dot == s || !isdigit(dot[-1]) || !isdigit(dot[1]))
         return -1;
@@ -2284,7 +2284,7 @@ toml_datum_t toml_timestamp_at(const toml_array_t *arr, int idx) {
   memset(&ret, 0, sizeof(ret));
   ret.ok = (0 == toml_rtots(toml_raw_at(arr, idx), &ts));
   if (ret.ok) {
-    ret.ok = !!(ret.u.ts = MALLOC(sizeof(*ret.u.ts)));
+    ret.ok = !!(ret.u.ts = (toml_timestamp_t *)MALLOC(sizeof(*ret.u.ts)));
     if (ret.ok) {
       *ret.u.ts = ts;
       if (ret.u.ts->year)
@@ -2345,7 +2345,7 @@ toml_datum_t toml_timestamp_in(const toml_table_t *arr, const char *key) {
   memset(&ret, 0, sizeof(ret));
   ret.ok = (0 == toml_rtots(toml_raw_in(arr, key), &ts));
   if (ret.ok) {
-    ret.ok = !!(ret.u.ts = MALLOC(sizeof(*ret.u.ts)));
+    ret.ok = !!(ret.u.ts = (toml_timestamp_t *)MALLOC(sizeof(*ret.u.ts)));
     if (ret.ok) {
       *ret.u.ts = ts;
       if (ret.u.ts->year)
