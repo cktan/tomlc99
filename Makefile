@@ -37,8 +37,11 @@ install: all
 	install $(LIB) ${prefix}/lib
 	install $(LIB_SHARED) ${prefix}/lib
 ifeq "$(prefix)" "/usr/local"
+ifneq ("$(wildcard $(PCFILE))","")
 	install $(PCFILE) /usr/local/lib/pkgconfig
 endif
+endif
+
 
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
