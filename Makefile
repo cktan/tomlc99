@@ -31,6 +31,10 @@ libtoml.so.$(LIB_VERSION): toml.o
 
 $(EXEC): $(LIB)
 
+check:
+	make -C unittest
+	./unittest/t1
+
 install: all
 	install -d ${prefix}/include ${prefix}/lib
 	install toml.h ${prefix}/include
