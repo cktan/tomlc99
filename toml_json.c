@@ -73,7 +73,7 @@ static void print_raw(const char *s) {
   toml_timestamp_t ts;
   char dbuf[100];
 
-  if (0 == toml_rtos(s, &sval)) {
+  if (0 == toml_rtos(s, &sval, NULL)) {
     printf("{\"type\":\"string\",\"value\":\"");
     print_escape_string(sval);
     printf("\"}");
