@@ -6,7 +6,7 @@ If you are looking for a C++ library, you might try this wrapper: [https://githu
 
 * Compatible with [TOML v1.0.0](https://toml.io/en/v1.0.0).
 * Tested with multiple test suites, including
-[BurntSushi/toml-test](https://github.com/BurntSushi/toml-test) and
+[toml-lang/toml-test](https://github.com/toml-lang/toml-test) and
 [iarna/toml-spec-tests](https://github.com/iarna/toml-spec-tests).
 * Provides very simple and intuitive interface.
 
@@ -174,7 +174,7 @@ Alternatively, specify `make install prefix=/a/file/path` to install into
 
 ## Testing
 
-To test against the standard test set provided by BurntSushi/toml-test:
+To test against the standard test set provided by toml-lang/toml-test:
 
 ```sh
 % make
