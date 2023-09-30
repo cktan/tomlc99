@@ -566,7 +566,7 @@ static char *norm_basic_str(const char *src, int srclen, int multiline,
           xfree(dst);
           return 0;
         }
-        ch = *sp++;
+        ch = toupper(*sp++);
         int v = ('0' <= ch && ch <= '9')
                     ? ch - '0'
                     : (('A' <= ch && ch <= 'F') ? ch - 'A' + 10 : -1);
@@ -1694,7 +1694,7 @@ static int scan_string(context_t *ctx, char *p, int lineno, int dotisspecial) {
       }
       if (hexreq) {
         hexreq--;
-        if (strchr("0123456789ABCDEF", *p))
+        if (strchr("0123456789ABCDEFabcdef", *p))
           continue;
         return e_syntax(ctx, lineno, "expect hex char");
       }
@@ -1743,7 +1743,7 @@ static int scan_string(context_t *ctx, char *p, int lineno, int dotisspecial) {
       }
       if (hexreq) {
         hexreq--;
-        if (strchr("0123456789ABCDEF", *p))
+        if (strchr("0123456789ABCDEFabcdef", *p))
           continue;
         return e_syntax(ctx, lineno, "expect hex char");
       }
