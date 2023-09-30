@@ -198,13 +198,12 @@ int toml_utf8_to_ucs(const char *orig, int len, int64_t *ret) {
 int toml_ucs_to_utf8(int64_t code, char buf[6]) {
   /* http://stackoverflow.com/questions/6240055/manually-converting-unicode-codepoints-into-utf-8-and-utf-16
    */
-  /* The UCS code values 0xd800–0xdfff (UTF-16 surrogates) as well
-   * as 0xfffe and 0xffff (UCS noncharacters) should not appear in
+  /* The UCS code values 0xd800–0xdfff (UTF-16 surrogates) should not appear in
    * conforming UTF-8 streams.
    */
   if (0xd800 <= code && code <= 0xdfff)
     return -1;
-  if (0xfffe <= code && code <= 0xffff)
+  if (0x10FFFF < code)
     return -1;
 
   /* 0x00000000 - 0x0000007F:
