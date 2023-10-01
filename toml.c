@@ -1981,6 +1981,8 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t *ret) {
 
   /* parse date YYYY-MM-DD */
   if (0 == scan_date(p, year, month, day)) {
+    if (*month < 1 || *day < 1 || *month > 12 || *day > 31)
+      return -1;
     ret->year = year;
     ret->month = month;
     ret->day = day;
@@ -1997,6 +1999,8 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t *ret) {
 
   /* parse time HH:MM:SS */
   if (0 == scan_time(p, hour, minute, second)) {
+    if (*second < 0 || *minute < 0 || *hour < 0 || *hour > 23 || *minute > 59 || *second > 60)
+      return -1;
     ret->hour = hour;
     ret->minute = minute;
     ret->second = second;
