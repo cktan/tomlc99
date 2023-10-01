@@ -2085,10 +2085,13 @@ int toml_rtoi(toml_raw_t src, int64_t *ret_) {
   int base = 0;
   int64_t dummy;
   int64_t *ret = ret_ ? ret_ : &dummy;
+  bool have_sign = false;
 
   /* allow +/- */
-  if (s[0] == '+' || s[0] == '-')
+  if (s[0] == '+' || s[0] == '-') {
+    have_sign = true;
     *p++ = *s++;
+  }
 
   /* disallow +_100 */
   if (s[0] == '_')
@@ -2116,6 +2119,14 @@ int toml_rtoi(toml_raw_t src, int64_t *ret_) {
       if (s[1])
         return -1;
     }
+    if (!*s)
+      return -1;
+    // disallow +0xff, -0xff
+    if (have_sign)
+      return -1;
+    // disallow 0x_, 0o_, 0b_
+    if (s[0] == '_')
+      return -1;
   }
 
   /* just strip underscores and pass to strtoll */
