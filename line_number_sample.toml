@@ -1,0 +1,10 @@
+[[fruit]]
+    name = "Banana"
+    price = 1.1
+
+[[fruit]]
+    name = "Orange"
+
+[[fruit]]
+    name = "Carrot"
+    price = 1.2
