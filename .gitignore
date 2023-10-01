@@ -32,6 +32,8 @@
 toml_cat
 toml_json
 toml_sample
+/unittest/t1
+/toml-test/toml-test
 
 # Debug files
 *.dSYM/

@@ -50,4 +50,13 @@ clean:
 format:
 	clang-format -i $(shell find . -name '*.[ch]')
 
-.PHONY: all clean install format
+toml-test: all
+	@./toml-test/build.sh
+	@./toml-test/run.sh
+
+check: toml-test
+	@make -C unittest
+	@./unittest/t1
+	./stdex/RUN.sh
+
+.PHONY: all clean install format toml-test check
