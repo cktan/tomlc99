@@ -442,7 +442,7 @@ static toml_arritem_t *expand_arritem(toml_arritem_t *p, int n) {
 }
 
 static char *norm_lit_str(const char *src, int srclen, int multiline,
-                          char *errbuf, int errbufsz) {
+                          char *errbuf, int errbufsz, size_t *destlen) {
   char *dst = 0; /* will write to dst[] and return it */
   int max = 0;   /* max size of dst[] */
   int off = 0;   /* cur offset in dst[] */
@@ -482,7 +482,9 @@ static char *norm_lit_str(const char *src, int srclen, int multiline,
     dst[off++] = ch;
   }
 
-  dst[off++] = 0;
+  dst[off] = 0;
+  if (destlen)
+    *destlen = off;
   return dst;
 }
 
@@ -491,7 +493,7 @@ static char *norm_lit_str(const char *src, int srclen, int multiline,
  * Returns NULL if error with errmsg in errbuf.
  */
 static char *norm_basic_str(const char *src, int srclen, int multiline,
-                            char *errbuf, int errbufsz) {
+                            char *errbuf, int errbufsz, size_t *destlen) {
   char *dst = 0; /* will write to dst[] and return it */
   int max = 0;   /* max size of dst[] */
   int off = 0;   /* cur offset in dst[] */
@@ -618,7 +620,9 @@ static char *norm_basic_str(const char *src, int srclen, int multiline,
   }
 
   // Cap with NUL and return it.
-  dst[off++] = 0;
+  dst[off] = 0;
+  if (destlen)
+    *destlen = off;
   return dst;
 }
 
@@ -649,7 +653,7 @@ static char *normalize_key(context_t *ctx, token_t strtok) {
       }
     } else {
       /* for double quote, we need to normalize */
-      ret = norm_basic_str(sp, sq - sp, multiline, ebuf, sizeof(ebuf));
+      ret = norm_basic_str(sp, sq - sp, multiline, ebuf, sizeof(ebuf), NULL);
       if (!ret) {
         e_syntax(ctx, lineno, ebuf);
         return 0;
@@ -2207,7 +2211,7 @@ int toml_rtod(toml_raw_t src, double *ret_) {
   return toml_rtod_ex(src, ret_, buf, sizeof(buf));
 }
 
-int toml_rtos(toml_raw_t src, char **ret) {
+int toml_rtos(toml_raw_t src, char **ret, size_t *s_len) {
   int multiline = 0;
   const char *sp;
   const char *sq;
@@ -2254,9 +2258,9 @@ int toml_rtos(toml_raw_t src, char **ret) {
   //     sq points to one char beyond last valid char.
   //     string len is (sq - sp).
   if (qchar == '\'') {
-    *ret = norm_lit_str(sp, sq - sp, multiline, 0, 0);
+    *ret = norm_lit_str(sp, sq - sp, multiline, 0, 0, s_len);
   } else {
-    *ret = norm_basic_str(sp, sq - sp, multiline, 0, 0);
+    *ret = norm_basic_str(sp, sq - sp, multiline, 0, 0, s_len);
   }
 
   return *ret ? 0 : -1;
@@ -2265,7 +2269,7 @@ int toml_rtos(toml_raw_t src, char **ret) {
 toml_datum_t toml_string_at(const toml_array_t *arr, int idx) {
   toml_datum_t ret;
   memset(&ret, 0, sizeof(ret));
-  ret.ok = (0 == toml_rtos(toml_raw_at(arr, idx), &ret.u.s));
+  ret.ok = (0 == toml_rtos(toml_raw_at(arr, idx), &ret.u.s, &ret.s_len));
   return ret;
 }
 
@@ -2325,7 +2329,7 @@ toml_datum_t toml_string_in(const toml_table_t *arr, const char *key) {
   memset(&ret, 0, sizeof(ret));
   toml_raw_t raw = toml_raw_in(arr, key);
   if (raw) {
-    ret.ok = (0 == toml_rtos(raw, &ret.u.s));
+    ret.ok = (0 == toml_rtos(raw, &ret.u.s, &ret.s_len));
   }
   return ret;
 }

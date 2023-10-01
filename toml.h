@@ -88,6 +88,7 @@ struct toml_datum_t {
     int64_t i;            /* int value */
     double d;             /* double value */
   } u;
+  size_t s_len;
 };
 
 /* on arrays: */
@@ -165,7 +166,7 @@ TOML_EXTERN void toml_set_memutil(void *(*xxmalloc)(size_t),
 typedef const char *toml_raw_t;
 TOML_EXTERN toml_raw_t toml_raw_in(const toml_table_t *tab, const char *key);
 TOML_EXTERN toml_raw_t toml_raw_at(const toml_array_t *arr, int idx);
-TOML_EXTERN int toml_rtos(toml_raw_t s, char **ret);
+TOML_EXTERN int toml_rtos(toml_raw_t s, char **ret, size_t *s_len);
 TOML_EXTERN int toml_rtob(toml_raw_t s, int *ret);
 TOML_EXTERN int toml_rtoi(toml_raw_t s, int64_t *ret);
 TOML_EXTERN int toml_rtod(toml_raw_t s, double *ret);
