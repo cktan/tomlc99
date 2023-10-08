@@ -1486,7 +1486,7 @@ toml_table_t *toml_parse_file(FILE *fp, char *errbuf, int errbufsz) {
   while (!feof(fp)) {
 
     if (off == bufsz) {
-      int xsz = bufsz + 1000;
+      int xsz = bufsz + 1024*16;
       char *x = expand(buf, bufsz, xsz);
       if (!x) {
         snprintf(errbuf, errbufsz, "out of memory");
