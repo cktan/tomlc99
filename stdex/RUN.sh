@@ -1,15 +1,27 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$DIR"
 rm -f *.out
+
+ok=0
+fail=0
 for i in *.toml; do
-   echo -n $i
    ../toml_cat $i >& $i.out
    if [ -f $i.res ]; then
       if $(diff $i.out $i.res >& /dev/null); then
-        echo " [OK]"
+        ok=$(( ok + 1 ))
       else
-	echo " [FAILED]"
+        fail=$(( fail + 1 ))
+        echo >&2 "$0: $i [FAILED]"
+        diff -u $i.out $i.res >&2
+        echo >&2
       fi
    else
-      echo " [?????]"
+      echo "$i [?????]"
+      fail=$(( fail + 1 ))
    fi
- 
 done
+
+echo "$0: ok: $ok  fail: $fail"

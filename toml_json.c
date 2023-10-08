@@ -59,7 +59,10 @@ static void print_escape_string(const char *s) {
       printf("\\\\");
       break;
     default:
-      printf("%c", ch);
+      if (ch >= 0x00 && ch <= 0x1f)
+        printf("\\u00%X", ch);
+      else
+        printf("%c", ch);
       break;
     }
   }

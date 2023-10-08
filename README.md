@@ -5,9 +5,7 @@ TOML in c99; v1.0 compliant.
 If you are looking for a C++ library, you might try this wrapper: [https://github.com/cktan/tomlcpp](https://github.com/cktan/tomlcpp).
 
 * Compatible with [TOML v1.0.0](https://toml.io/en/v1.0.0).
-* Tested with multiple test suites, including
-[toml-lang/toml-test](https://github.com/toml-lang/toml-test) and
-[iarna/toml-spec-tests](https://github.com/iarna/toml-spec-tests).
+* Tested with [toml-lang/toml-test](https://github.com/toml-lang/toml-test).
 * Provides very simple and intuitive interface.
 
 
@@ -174,21 +172,9 @@ Alternatively, specify `make install prefix=/a/file/path` to install into
 
 ## Testing
 
-To test against the standard test set provided by toml-lang/toml-test:
+Run `make toml-test` to test against the standard test set provided by
+toml-lang/toml-test.
 
-```sh
-% make
-% cd test1
-% bash build.sh   # do this once
-% bash run.sh     # this will run the test suite
-```
+You will need to have Go installed for this to work.
 
-
-To test against the standard test set provided by iarna/toml:
-
-```sh
-% make
-% cd test2
-% bash build.sh   # do this once
-% bash run.sh     # this will run the test suite
-```
+Run `make check` to run the toml-test tests and some additional unit tests.

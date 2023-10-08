@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -198,13 +199,12 @@ int toml_utf8_to_ucs(const char *orig, int len, int64_t *ret) {
 int toml_ucs_to_utf8(int64_t code, char buf[6]) {
   /* http://stackoverflow.com/questions/6240055/manually-converting-unicode-codepoints-into-utf-8-and-utf-16
    */
-  /* The UCS code values 0xd800–0xdfff (UTF-16 surrogates) as well
-   * as 0xfffe and 0xffff (UCS noncharacters) should not appear in
+  /* The UCS code values 0xd800–0xdfff (UTF-16 surrogates) should not appear in
    * conforming UTF-8 streams.
    */
   if (0xd800 <= code && code <= 0xdfff)
     return -1;
-  if (0xfffe <= code && code <= 0xffff)
+  if (0x10FFFF < code)
     return -1;
 
   /* 0x00000000 - 0x0000007F:
@@ -566,7 +566,7 @@ static char *norm_basic_str(const char *src, int srclen, int multiline,
           xfree(dst);
           return 0;
         }
-        ch = *sp++;
+        ch = toupper(*sp++);
         int v = ('0' <= ch && ch <= '9')
                     ? ch - '0'
                     : (('A' <= ch && ch <= 'F') ? ch - 'A' + 10 : -1);
@@ -1694,7 +1694,7 @@ static int scan_string(context_t *ctx, char *p, int lineno, int dotisspecial) {
       }
       if (hexreq) {
         hexreq--;
-        if (strchr("0123456789ABCDEF", *p))
+        if (strchr("0123456789ABCDEFabcdef", *p))
           continue;
         return e_syntax(ctx, lineno, "expect hex char");
       }
@@ -1743,7 +1743,7 @@ static int scan_string(context_t *ctx, char *p, int lineno, int dotisspecial) {
       }
       if (hexreq) {
         hexreq--;
-        if (strchr("0123456789ABCDEF", *p))
+        if (strchr("0123456789ABCDEFabcdef", *p))
           continue;
         return e_syntax(ctx, lineno, "expect hex char");
       }
@@ -1982,6 +1982,8 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t *ret) {
 
   /* parse date YYYY-MM-DD */
   if (0 == scan_date(p, year, month, day)) {
+    if (*month < 1 || *day < 1 || *month > 12 || *day > 31)
+      return -1;
     ret->year = year;
     ret->month = month;
     ret->day = day;
@@ -1998,6 +2000,8 @@ int toml_rtots(toml_raw_t src_, toml_timestamp_t *ret) {
 
   /* parse time HH:MM:SS */
   if (0 == scan_time(p, hour, minute, second)) {
+    if (*second < 0 || *minute < 0 || *hour < 0 || *hour > 23 || *minute > 59 || *second > 60)
+      return -1;
     ret->hour = hour;
     ret->minute = minute;
     ret->second = second;
@@ -2081,10 +2085,13 @@ int toml_rtoi(toml_raw_t src, int64_t *ret_) {
   int base = 0;
   int64_t dummy;
   int64_t *ret = ret_ ? ret_ : &dummy;
+  bool have_sign = false;
 
   /* allow +/- */
-  if (s[0] == '+' || s[0] == '-')
+  if (s[0] == '+' || s[0] == '-') {
+    have_sign = true;
     *p++ = *s++;
+  }
 
   /* disallow +_100 */
   if (s[0] == '_')
@@ -2112,6 +2119,14 @@ int toml_rtoi(toml_raw_t src, int64_t *ret_) {
       if (s[1])
         return -1;
     }
+    if (!*s)
+      return -1;
+    // disallow +0xff, -0xff
+    if (have_sign)
+      return -1;
+    // disallow 0x_, 0o_, 0b_
+    if (s[0] == '_')
+      return -1;
   }
 
   /* just strip underscores and pass to strtoll */
@@ -2152,6 +2167,7 @@ int toml_rtod_ex(toml_raw_t src, double *ret_, char *buf, int buflen) {
   const char *s = src;
   double dummy;
   double *ret = ret_ ? ret_ : &dummy;
+  bool have_us = false;
 
   /* allow +/- */
   if (s[0] == '+' || s[0] == '-')
@@ -2179,14 +2195,24 @@ int toml_rtod_ex(toml_raw_t src, double *ret_, char *buf, int buflen) {
   while (*s && p < q) {
     int ch = *s++;
     if (ch == '_') {
+      have_us = true;
       // disallow '__'
       if (s[0] == '_')
+        return -1;
+      // disallow _e
+      if (s[0] == 'e')
         return -1;
       // disallow last char '_'
       if (s[0] == 0)
         return -1;
       continue; /* skip _ */
     }
+    // inf and nan are case-sensitive.
+    if (ch == 'I' || ch == 'N' || ch == 'F' || ch == 'A')
+      return -1;
+    // disallow e_
+    if (ch == 'e' && s[0] == '_')
+      return -1;
     *p++ = ch;
   }
   if (*s || p == q)
@@ -2199,7 +2225,11 @@ int toml_rtod_ex(toml_raw_t src, double *ret_, char *buf, int buflen) {
   char *endp;
   errno = 0;
   *ret = strtod(buf, &endp);
-  return (errno || *endp) ? -1 : 0;
+  if (errno || *endp)
+    return -1;
+  if (have_us && (isnan(*ret) || isinf(*ret)))
+    return -1;
+  return 0;
 }
 
 int toml_rtod(toml_raw_t src, double *ret_) {
