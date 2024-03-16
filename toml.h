@@ -143,7 +143,7 @@ TOML_EXTERN toml_table_t *toml_table_in(const toml_table_t *tab,
 /*-----------------------------------------------------------------
  * lesser used
  */
-/* Return the array kind: 't'able, 'a'rray, 'v'alue, 'm'ixed */
+/* Return the array kind: ta'B'le, 'a'rray, 'v'alue, 'm'ixed */
 TOML_EXTERN char toml_array_kind(const toml_array_t *arr);
 
 /* For array kind 'v'alue, return the type of values

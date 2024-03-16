@@ -1973,11 +1973,7 @@ toml_kind_t toml_kind_at(const toml_array_t *arr, int idx) {
 int toml_kind_one_of_at(const toml_array_t *arr, int idx, const char *kinds) {
   toml_kind_t kind = toml_kind_at(arr, idx);
 
-  if (kind == TOML_KIND_UNKNOWN) {
-    return 0;
-  } else {
-    return (strchr(kinds, (char)kind) != NULL);
-  }
+  return (strchr(kinds, (char)kind) != NULL);
 }
 
 toml_kind_t toml_kind_in(const toml_table_t *tab, const char* key) {
@@ -2004,11 +2000,7 @@ toml_kind_t toml_kind_in(const toml_table_t *tab, const char* key) {
 int toml_kind_one_of_in(const toml_table_t *tab, const char* key, const char *kinds) {
   toml_kind_t kind = toml_kind_in(tab, key);
 
-  if (kind == TOML_KIND_UNKNOWN) {
-    return 0;
-  } else {
-    return (strchr(kinds, (char)kind) != NULL);
-  }
+  return (strchr(kinds, (char)kind) != NULL);
 }
 
 static int parse_millisec(const char *p, const char **endp);
