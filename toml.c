@@ -287,18 +287,18 @@ struct toml_keyval_t {
 
 typedef struct toml_arritem_t toml_arritem_t;
 struct toml_arritem_t {
-  int valtype; /* for value kind: 'i'nt, 'd'ouble, 'b'ool, 's'tring, 't'ime,
-                  'D'ate, 'T'imestamp */
+  toml_kind_t valtype; /* for value kind: 'i'nt, 'd'ouble, 'b'ool, 's'tring, 't'ime,
+                          'D'ate, 'T'imestamp */
   char *val;
   toml_array_t *arr;
   toml_table_t *tab;
 };
 
 struct toml_array_t {
-  const char *key; /* key to this array */
-  int kind;        /* element kind: 'v'alue, 'a'rray, or 't'able, 'm'ixed */
-  int type;        /* for value kind: 'i'nt, 'd'ouble, 'b'ool, 's'tring, 't'ime,
-                      'D'ate, 'T'imestamp, 'm'ixed */
+  const char *key;     /* key to this array */
+  toml_kind_t kind;    /* element kind: 'v'alue, 'a'rray, or ta'b'le, 'm'ixed */
+  toml_kind_t valtype; /* for value kind: 'i'nt, 'd'ouble, 'b'ool, 's'tring, 't'ime,
+                          'D'ate, 'T'imestamp, 'm'ixed */
 
   int nitem; /* number of elements */
   toml_arritem_t *item;
@@ -687,7 +687,7 @@ static char *normalize_key(context_t *ctx, token_t strtok) {
 
 /*
  * Look up key in tab. Return 0 if not found, or
- * 'v'alue, 'a'rray or 't'able depending on the element.
+ * 'v'alue, 'a'rray or ta'b'le depending on the element.
  */
 static int check_key(toml_table_t *tab, const char *key,
                      toml_keyval_t **ret_val, toml_array_t **ret_arr,
@@ -709,19 +709,19 @@ static int check_key(toml_table_t *tab, const char *key,
   for (i = 0; i < tab->nkval; i++) {
     if (0 == strcmp(key, tab->kval[i]->key)) {
       *ret_val = tab->kval[i];
-      return 'v';
+      return TOML_KIND_VALUE;
     }
   }
   for (i = 0; i < tab->narr; i++) {
     if (0 == strcmp(key, tab->arr[i]->key)) {
       *ret_arr = tab->arr[i];
-      return 'a';
+      return TOML_KIND_ARRAY;
     }
   }
   for (i = 0; i < tab->ntab; i++) {
     if (0 == strcmp(key, tab->tab[i]->key)) {
       *ret_tab = tab->tab[i];
-      return 't';
+      return TOML_KIND_TABLE;
     }
   }
   return 0;
@@ -985,21 +985,21 @@ static int parse_inline_table(context_t *ctx, toml_table_t *tab) {
 static int valtype(const char *val) {
   toml_timestamp_t ts;
   if (*val == '\'' || *val == '"')
-    return 's';
+    return TOML_KIND_STRING;
   if (0 == toml_rtob(val, 0))
-    return 'b';
+    return TOML_KIND_BOOL;
   if (0 == toml_rtoi(val, 0))
-    return 'i';
+    return TOML_KIND_INT;
   if (0 == toml_rtod(val, 0))
-    return 'd';
+    return TOML_KIND_DOUBLE;
   if (0 == toml_rtots(val, &ts)) {
     if (ts.year && ts.hour)
-      return 'T'; /* timestamp */
+      return TOML_KIND_TIMESTAMP; /* timestamp */
     if (ts.year)
-      return 'D'; /* date */
-    return 't';   /* time */
+      return TOML_KIND_DATE; /* date */
+    return TOML_KIND_TIME;   /* time */
   }
-  return 'u'; /* unknown */
+  return TOML_KIND_UNKNOWN; /* unknown */
 }
 
 /* We are at '[...]' */
@@ -1019,9 +1019,9 @@ static int parse_array(context_t *ctx, toml_array_t *arr) {
     case STRING: {
       /* set array kind if this will be the first entry */
       if (arr->kind == 0)
-        arr->kind = 'v';
-      else if (arr->kind != 'v')
-        arr->kind = 'm';
+        arr->kind = TOML_KIND_VALUE;
+      else if (arr->kind != TOML_KIND_VALUE)
+        arr->kind = TOML_KIND_MIXED;
 
       char *val = ctx->tok.ptr;
       int vlen = ctx->tok.len;
@@ -1038,9 +1038,9 @@ static int parse_array(context_t *ctx, toml_array_t *arr) {
 
       /* set array type if this is the first entry */
       if (arr->nitem == 1)
-        arr->type = newval->valtype;
-      else if (arr->type != newval->valtype)
-        arr->type = 'm'; /* mixed */
+        arr->valtype = newval->valtype;
+      else if (arr->valtype != newval->valtype)
+        arr->valtype = TOML_KIND_MIXED; /* mixed */
 
       if (eat_token(ctx, STRING, 0, FLINE))
         return -1;
@@ -1050,9 +1050,9 @@ static int parse_array(context_t *ctx, toml_array_t *arr) {
     case LBRACKET: { /* [ [array], [array] ... ] */
       /* set the array kind if this will be the first entry */
       if (arr->kind == 0)
-        arr->kind = 'a';
-      else if (arr->kind != 'a')
-        arr->kind = 'm';
+        arr->kind = TOML_KIND_ARRAY;
+      else if (arr->kind != TOML_KIND_ARRAY)
+        arr->kind = TOML_KIND_MIXED;
 
       toml_array_t *subarr = create_array_in_array(ctx, arr);
       if (!subarr)
@@ -1065,9 +1065,9 @@ static int parse_array(context_t *ctx, toml_array_t *arr) {
     case LBRACE: { /* [ {table}, {table} ... ] */
       /* set the array kind if this will be the first entry */
       if (arr->kind == 0)
-        arr->kind = 't';
-      else if (arr->kind != 't')
-        arr->kind = 'm';
+        arr->kind = TOML_KIND_TABLE;
+      else if (arr->kind != TOML_KIND_TABLE)
+        arr->kind = TOML_KIND_MIXED;
 
       toml_table_t *subtab = create_table_in_array(ctx, arr);
       if (!subtab)
@@ -1258,13 +1258,13 @@ static int walk_tabpath(context_t *ctx) {
     toml_array_t *nextarr = 0;
     toml_table_t *nexttab = 0;
     switch (check_key(curtab, key, &nextval, &nextarr, &nexttab)) {
-    case 't':
+    case TOML_KIND_TABLE:
       /* found a table. nexttab is where we will go next. */
       break;
 
-    case 'a':
+    case TOML_KIND_ARRAY:
       /* found an array. nexttab is the last table in the array. */
-      if (nextarr->kind != 't')
+      if (nextarr->kind != TOML_KIND_TABLE)
         return e_internal(ctx, FLINE);
 
       if (nextarr->nitem == 0)
@@ -1273,7 +1273,7 @@ static int walk_tabpath(context_t *ctx) {
       nexttab = nextarr->item[nextarr->nitem - 1].tab;
       break;
 
-    case 'v':
+    case TOML_KIND_VALUE:
       return e_keyexists(ctx, ctx->tpath.tok[i].lineno);
 
     default: { /* Not found. Let's create an implicit table. */
@@ -1356,11 +1356,11 @@ static int parse_select(context_t *ctx) {
       xfree(zstr);
     }
     if (!arr) {
-      arr = create_keyarray_in_table(ctx, ctx->curtab, z, 't');
+      arr = create_keyarray_in_table(ctx, ctx->curtab, z, TOML_KIND_TABLE);
       if (!arr)
         return -1;
     }
-    if (arr->kind != 't')
+    if (arr->kind != TOML_KIND_TABLE)
       return e_syntax(ctx, z.lineno, "array mismatch");
 
     /* add to z[] */
@@ -1928,13 +1928,13 @@ toml_raw_t toml_raw_at(const toml_array_t *arr, int idx) {
 char toml_array_kind(const toml_array_t *arr) { return arr->kind; }
 
 char toml_array_type(const toml_array_t *arr) {
-  if (arr->kind != 'v')
+  if (arr->kind != TOML_KIND_VALUE)
     return 0;
 
   if (arr->nitem == 0)
     return 0;
 
-  return arr->type;
+  return arr->valtype;
 }
 
 int toml_array_nelem(const toml_array_t *arr) { return arr->nitem; }
@@ -1959,6 +1959,56 @@ toml_array_t *toml_array_at(const toml_array_t *arr, int idx) {
 
 toml_table_t *toml_table_at(const toml_array_t *arr, int idx) {
   return (0 <= idx && idx < arr->nitem) ? arr->item[idx].tab : 0;
+}
+
+toml_kind_t toml_kind_at(const toml_array_t *arr, int idx) {
+  if ((0 > idx) || (idx >= arr->nitem))
+  {
+    return TOML_KIND_UNKNOWN;
+  }
+
+  return arr->item[idx].valtype;
+}
+
+int toml_kind_one_of_at(const toml_array_t *arr, int idx, const char *kinds) {
+  toml_kind_t kind = toml_kind_at(arr, idx);
+
+  if (kind == TOML_KIND_UNKNOWN) {
+    return 0;
+  } else {
+    return (strchr(kinds, (char)kind) != NULL);
+  }
+}
+
+toml_kind_t toml_kind_in(const toml_table_t *tab, const char* key) {
+  int i;
+
+  for (i = 0; i < tab->nkval; i++) {
+    if (0 == strcmp(key, tab->kval[i]->key))
+        return valtype(tab->kval[i]->val);
+  }
+
+  for (i = 0; i < tab->narr; i++) {
+    if (0 == strcmp(key, tab->arr[i]->key))
+      return TOML_KIND_ARRAY;
+  }
+
+  for (i = 0; i < tab->ntab; i++) {
+    if (0 == strcmp(key, tab->tab[i]->key))
+      return TOML_KIND_TABLE;
+  }
+
+  return TOML_KIND_UNKNOWN;
+}
+
+int toml_kind_one_of_in(const toml_table_t *tab, const char* key, const char *kinds) {
+  toml_kind_t kind = toml_kind_in(tab, key);
+
+  if (kind == TOML_KIND_UNKNOWN) {
+    return 0;
+  } else {
+    return (strchr(kinds, (char)kind) != NULL);
+  }
 }
 
 static int parse_millisec(const char *p, const char **endp);
