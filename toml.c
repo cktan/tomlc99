@@ -296,7 +296,7 @@ struct toml_arritem_t {
 
 struct toml_array_t {
   const char *key;     /* key to this array */
-  toml_kind_t kind;    /* element kind: 'v'alue, 'a'rray, or ta'b'le, 'm'ixed */
+  toml_kind_t kind;    /* element kind: 'v'alue, 'a'rray, or ta'B'le, 'm'ixed */
   toml_kind_t valtype; /* for value kind: 'i'nt, 'd'ouble, 'b'ool, 's'tring, 't'ime,
                           'D'ate, 'T'imestamp, 'm'ixed */
 
@@ -687,7 +687,7 @@ static char *normalize_key(context_t *ctx, token_t strtok) {
 
 /*
  * Look up key in tab. Return 0 if not found, or
- * 'v'alue, 'a'rray or ta'b'le depending on the element.
+ * 'v'alue, 'a'rray or ta'B'le depending on the element.
  */
 static int check_key(toml_table_t *tab, const char *key,
                      toml_keyval_t **ret_val, toml_array_t **ret_arr,
