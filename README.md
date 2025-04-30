@@ -1,6 +1,6 @@
 # tomlc99
 
-**Note: there is a newer version of this library available at [tomlc17](https://github.com/cktan/tomlc17).**
+> **Note: there is a newer version of this library available at [tomlc17](https://github.com/cktan/tomlc17).**
 
 TOML in c99; v1.0 compliant.
 
