@@ -38,10 +38,26 @@
 #define TOML_EXTERN extern
 #endif
 
+enum toml_kind_t {
+  TOML_KIND_UNKNOWN = 'u',
+  TOML_KIND_STRING = 's',
+  TOML_KIND_INT    = 'i',
+  TOML_KIND_BOOL   = 'b',
+  TOML_KIND_DOUBLE = 'd',
+  TOML_KIND_TABLE  = 'B',
+  TOML_KIND_ARRAY  = 'a',
+  TOML_KIND_DATE   = 'D',
+  TOML_KIND_TIME   = 't',
+  TOML_KIND_TIMESTAMP = 'T',
+  TOML_KIND_MIXED = 'm',
+  TOML_KIND_VALUE = 'v',
+};
+
 typedef struct toml_timestamp_t toml_timestamp_t;
 typedef struct toml_table_t toml_table_t;
 typedef struct toml_array_t toml_array_t;
 typedef struct toml_datum_t toml_datum_t;
+typedef enum toml_kind_t toml_kind_t;
 
 /* Parse a file. Return a table on success, or 0 otherwise.
  * Caller must toml_free(the-return-value) after use.
@@ -126,7 +142,7 @@ TOML_EXTERN toml_table_t *toml_table_in(const toml_table_t *tab,
 /*-----------------------------------------------------------------
  * lesser used
  */
-/* Return the array kind: 't'able, 'a'rray, 'v'alue, 'm'ixed */
+/* Return the array kind: ta'B'le, 'a'rray, 'v'alue, 'm'ixed */
 TOML_EXTERN char toml_array_kind(const toml_array_t *arr);
 
 /* For array kind 'v'alue, return the type of values
@@ -149,6 +165,12 @@ TOML_EXTERN int toml_table_ntab(const toml_table_t *tab);
 
 /* Return the key of a table*/
 TOML_EXTERN const char *toml_table_key(const toml_table_t *tab);
+
+TOML_EXTERN toml_kind_t toml_kind_at(const toml_array_t *arr, int idx);
+TOML_EXTERN toml_kind_t toml_kind_in(const toml_table_t *tab, const char* key);
+TOML_EXTERN int toml_kind_one_of_at(const toml_array_t *arr, int idx, const char *kinds);
+TOML_EXTERN int toml_kind_one_of_in(const toml_table_t *tab, const char* key,
+                                            const char *kinds);
 
 /*--------------------------------------------------------------
  * misc
