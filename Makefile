@@ -46,6 +46,13 @@ endif
 clean:
 	rm -f *.o $(EXEC) $(LIB) $(LIB_SHARED)
 
+uninstall:
+	rm -f ${prefix}/include/toml.h
+	rm -f ${prefix}/lib/$(LIB)
+	rm -f ${prefix}/lib/$(LIB_SHARED)
+ifeq "$(prefix)" "/usr/local"
+	rm -f /usr/local/lib/pkgconfig/$(PCFILE)
+endif
 
 format:
 	clang-format -i $(shell find . -name '*.[ch]')
