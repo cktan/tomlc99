@@ -176,6 +176,26 @@ Invoking `make install` will install the header and library files into
 Alternatively, specify `make install prefix=/a/file/path` to install into
 /a/file/path/{include,lib}.
 
+You can also use standard `meson` commands to compile and install. To build:
+
+```sh
+$ meson setup obj
+$ ninja -C obj
+```
+
+and to install (by default: the shared library, headers, and `pkg-config`
+metadata):
+
+```sh
+$ ninja -C obj install
+```
+
+to configure for a static build instead:
+
+```sh
+$ meson setup --default-library=static obj
+```
+
 ## Testing
 
 To test against the standard test set provided by toml-lang/toml-test:
