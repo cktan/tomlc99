@@ -64,42 +64,41 @@ static void print_string(const char *s) {
     return;
   }
 
-  int len = strlen(s);
-
   printf("\"");
-  for (; len; len--, s++) {
+  while (*s) {
     int ch = *s;
     if (isprint(ch) && ch != '"' && ch != '\\') {
       putchar(ch);
-      continue;
     }
-
-    switch (ch) {
-    case 0x8:
-      printf("\\b");
-      continue;
-    case 0x9:
-      printf("\\t");
-      continue;
-    case 0xa:
-      printf("\\n");
-      continue;
-    case 0xc:
-      printf("\\f");
-      continue;
-    case 0xd:
-      printf("\\r");
-      continue;
-    case '"':
-      printf("\\\"");
-      continue;
-    case '\\':
-      printf("\\\\");
-      continue;
-    default:
-      printf("\\0x%02x", ch & 0xff);
-      continue;
+    else {
+      switch (ch) {
+      case 0x8:
+        printf("\\b");
+        break;
+      case 0x9:
+        printf("\\t");
+        break;
+      case 0xa:
+        printf("\\n");
+        break;
+      case 0xc:
+        printf("\\f");
+        break;
+      case 0xd:
+        printf("\\r");
+        break;
+      case '"':
+        printf("\\\"");
+        break;
+      case '\\':
+        printf("\\\\");
+        break;
+      default:
+        printf("\\0x%02x", ch & 0xff);
+        break;
+      }
     }
+    s++;
   }
   printf("\"");
 }
