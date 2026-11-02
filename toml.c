@@ -351,6 +351,8 @@ struct token_t {
 };
 
 typedef struct context_t context_t;
+#define TOML_MAX_NESTING_DEPTH 1000
+
 struct context_t {
   char *start;
   char *stop;
@@ -360,6 +362,8 @@ struct context_t {
   token_t tok;
   toml_table_t *root;
   toml_table_t *curtab;
+
+  int depth;
 
   struct {
     int top;
@@ -943,6 +947,8 @@ static inline int eat_token(context_t *ctx, tokentype_t typ, int isdotspecial,
  * Parse the table.
  */
 static int parse_inline_table(context_t *ctx, toml_table_t *tab) {
+  if (++ctx->depth > TOML_MAX_NESTING_DEPTH)
+    return e_syntax(ctx, ctx->tok.lineno, "nesting too deep");
   if (eat_token(ctx, LBRACE, 1, FLINE))
     return -1;
 
@@ -979,6 +985,7 @@ static int parse_inline_table(context_t *ctx, toml_table_t *tab) {
 
   tab->readonly = 1;
 
+  ctx->depth--;
   return 0;
 }
 
@@ -1004,6 +1011,8 @@ static int valtype(const char *val) {
 
 /* We are at '[...]' */
 static int parse_array(context_t *ctx, toml_array_t *arr) {
+  if (++ctx->depth > TOML_MAX_NESTING_DEPTH)
+    return e_syntax(ctx, ctx->tok.lineno, "nesting too deep");
   if (eat_token(ctx, LBRACKET, 0, FLINE))
     return -1;
 
@@ -1095,6 +1104,7 @@ static int parse_array(context_t *ctx, toml_array_t *arr) {
 
   if (eat_token(ctx, RBRACKET, 1, FLINE))
     return -1;
+  ctx->depth--;
   return 0;
 }
 
